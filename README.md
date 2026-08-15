@@ -1,6 +1,4 @@
-from pathlib import Path
-
-readme = """# CodeHub
+# CodeHub
 
 CodeHub is a mobile-first Android development workstation designed to turn a capable Android phone or tablet into a practical software engineering environment.
 
