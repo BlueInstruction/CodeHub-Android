@@ -923,9 +923,15 @@ The objective is to progressively make Android a practical engineering workstati
 
 ## License
 
-License information will be added when the project's licensing model is finalized.
-"""
+MIT License — see [LICENSE](LICENSE).
 
-path = Path("/mnt/data/README.md")
-path.write_text(readme, encoding="utf-8")
-print(f"Created: {path}")
+Source files in `integrations/` reference upstream projects under their
+own licenses. Verify applicable licenses before redistributing source
+code, binaries, modified components or bundled assets.
+
+## Repository status
+
+CodeHub is under active development. See [docs/ROADMAP.md](docs/ROADMAP.md)
+for current phase status, and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+for the module map.
+
