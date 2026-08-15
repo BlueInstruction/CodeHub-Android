@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">CodeHub</string>
+    <string name="workspace_empty">No workspace open</string>
+    <string name="workspace_open">Open Workspace</string>
+    <string name="workspace_recent">Recent</string>
+    <string name="nav_editor">Editor</string>
+    <string name="nav_terminal">Terminal</string>
+    <string name="nav_git">Git</string>
+    <string name="nav_devices">Devices</string>
+    <string name="nav_run">Run</string>
+    <string name="nav_debug">Debug</string>
+    <string name="nav_files">Files</string>
+    <string name="nav_ai">AI</string>
+    <string name="service_notification_title">CodeHub</string>
+    <string name="service_notification_text">Development services active</string>
+    <string name="channel_services">Services</string>
+    <string name="channel_builds">Builds</string>
+    <string name="channel_agents">Agents</string>
+</resources>

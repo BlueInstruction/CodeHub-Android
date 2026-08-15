@@ -1,0 +1,2 @@
+-keep class io.github.blueinstruction.codehub.** { *; }
+-dontwarn org.jetbrains.annotations.**

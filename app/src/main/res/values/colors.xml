@@ -1,0 +1,6 @@
+<resources>
+    <color name="codehub_bg">#0B0E14</color>
+    <color name="codehub_surface">#11151E</color>
+    <color name="codehub_accent">#4FC3F7</color>
+    <color name="codehub_text">#E6EDF3</color>
+</resources>
