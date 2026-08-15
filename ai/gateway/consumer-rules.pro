@@ -1,0 +1,2 @@
+-keep class io.github.blueinstruction.codehub.ai.gateway.** { *; }
+-keep class kotlinx.serialization.Serializable { *; }

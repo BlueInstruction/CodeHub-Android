@@ -1,0 +1,31 @@
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
+}
+
+android {
+    namespace = "io.github.blueinstruction.codehub.ai.tools"
+    compileSdk = 35
+    defaultConfig { minSdk = 29 }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    buildFeatures { buildConfig = true }
+}
+
+dependencies {
+    implementation(project(":core:workspace"))
+    implementation(project(":core:process"))
+    implementation(project(":build:api"))
+    implementation(project(":git:core"))
+    implementation(project(":devtools:logcat"))
+    implementation(project(":devtools:vulkan"))
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+}
