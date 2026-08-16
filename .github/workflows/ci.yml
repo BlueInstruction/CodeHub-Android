@@ -1,0 +1,175 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew || true
+
+      - name: Run unit tests
+        run: |
+          if [ -f gradlew ]; then
+            ./gradlew test --no-daemon --stacktrace
+          else
+            echo "No gradlew found — generating wrapper"
+            gradle wrapper --gradle-version 8.10.2
+            ./gradlew test --no-daemon --stacktrace
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            **/build/test-results/**/TEST-*.xml
+            **/build/reports/tests/**
+          retention-days: 7
+
+  build-debug-apk:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew || true
+
+      - name: Build debug APK
+        run: |
+          if [ -f gradlew ]; then
+            ./gradlew :app:assembleDebug --no-daemon --stacktrace
+          else
+            gradle wrapper --gradle-version 8.10.2
+            ./gradlew :app:assembleDebug --no-daemon --stacktrace
+          fi
+
+      - name: Upload APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 7
+
+  lint-check:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew || true
+
+      - name: Run lint
+        run: |
+          if [ -f gradlew ]; then
+            ./gradlew lint --no-daemon --stacktrace || true
+          else
+            gradle wrapper --gradle-version 8.10.2
+            ./gradlew lint --no-daemon --stacktrace || true
+          fi
+
+  module-structure-check:
+    name: Module Structure
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify no blueinstruction references
+        run: |
+          if grep -rn "blueinstruction" --include="*.kt" --include="*.kts" --include="*.pro" --include="*.xml" --include="*.toml" --include="*.md" . 2>/dev/null; then
+            echo "ERROR: Found 'blueinstruction' references in source files"
+            exit 1
+          fi
+          echo "OK: No blueinstruction references found"
+
+      - name: Verify gradle-wrapper.jar is bundled
+        run: |
+          if [ ! -f core/workspace/src/main/assets/gradle-wrapper/gradle-wrapper.jar ]; then
+            echo "ERROR: gradle-wrapper.jar is missing from assets"
+            exit 1
+          fi
+          echo "OK: gradle-wrapper.jar is present"
+
+      - name: Verify Apache 2.0 license files
+        run: |
+          if [ ! -f terminal/termux/LICENSE-APACHE-2.0.txt ]; then
+            echo "ERROR: Apache 2.0 license missing from terminal/termux"
+            exit 1
+          fi
+          if [ ! -f terminal/termux/NOTICE ]; then
+            echo "ERROR: NOTICE file missing from terminal/termux"
+            exit 1
+          fi
+          echo "OK: Apache 2.0 attribution files present"
+
+      - name: Count modules
+        run: |
+          MODULE_COUNT=$(find . -name "build.gradle.kts" -not -path './.git/*' | wc -l)
+          echo "Module count: $MODULE_COUNT"
+          if [ "$MODULE_COUNT" -lt 30 ]; then
+            echo "WARNING: Expected at least 30 modules, found $MODULE_COUNT"
+          fi
+
+      - name: Count test files
+        run: |
+          TEST_COUNT=$(find . -name "*Test.kt" -not -path './.git/*' -not -path './buildSrc/*' | wc -l)
+          echo "Test files: $TEST_COUNT"
+
+      - name: Verify docs
+        run: |
+          for doc in VISION.md VERTICAL_SLICE.md TOOLCHAIN_INVARIANT.md ARCHITECTURE.md ROADMAP.md; do
+            if [ ! -f docs/$doc ]; then
+              echo "WARNING: docs/$doc is missing"
+            fi
+          done
