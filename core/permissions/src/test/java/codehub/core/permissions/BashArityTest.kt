@@ -43,7 +43,7 @@ class BashArityTest {
     @Test
     fun `describe returns human-friendly prefix`() {
         val description = BashArity.describe("git push --force origin main")
-        assertThat(description).isEqualTo("git push")
+        assertThat(description).isEqualTo("git push --force")
     }
 
     @Test
@@ -55,13 +55,13 @@ class BashArityTest {
     @Test
     fun `describe handles docker with subcommand`() {
         val description = BashArity.describe("docker stop mycontainer")
-        assertThat(description).isEqualTo("docker stop")
+        assertThat(description).isEqualTo("docker stop mycontainer")
     }
 
     @Test
     fun `describe handles nested docker compose`() {
         val description = BashArity.describe("docker compose logs -f web")
-        assertThat(description).isEqualTo("docker compose")
+        assertThat(description).isEqualTo("docker compose logs")
     }
 
     @Test

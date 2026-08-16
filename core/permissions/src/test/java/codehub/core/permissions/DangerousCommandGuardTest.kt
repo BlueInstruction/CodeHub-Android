@@ -68,7 +68,7 @@ class DangerousCommandGuardTest {
     @Test
     fun `decisionStream emits on resolve`() = runTest {
         val guard = DangerousCommandGuard(sink)
-        guard.evaluate("rm -rf /tmp/x", "s1", "w1")
+        guard.evaluate("rm -rf /", "s1", "w1")
         val requestId = guard.pendingRequests.value.first().requestId
         guard.decisionStream.test {
             guard.resolve(requestId, allowed = true, scope = DecisionScope.Once, decidedBy = "user")

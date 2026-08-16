@@ -52,7 +52,7 @@ object DangerousCommandPatterns {
         Pattern("git_branch_delete_force", Regex("""\bgit\s+branch\s+-D\b"""), "Force-delete branch", Severity.Warn),
         Pattern("git_rebase_master", Regex("""\bgit\s+rebase\s+(?:--(?:onto|root)\s+)?(?:origin/)?(?:master|main)\b"""), "Rebase onto main (history rewrite risk)", Severity.Warn),
         Pattern("git_filter_branch", Regex("""\bgit\s+filter-branch\b"""), "Rewrite history (slow, destructive)", Severity.Dangerous),
-        Pattern("find_delete", Regex("""\bfind\s+/(?:[^\s]+\s+)*-delete\b"""), "Find with -delete on root", Severity.Catastrophic),
+        Pattern("find_delete", Regex("""\bfind\s+/.*-delete(?:\s|$)"""), "Find with -delete on root", Severity.Catastrophic),
         Pattern("find_delete_home", Regex("""\bfind\s+~(?:\s+[^\s]+)*\s+-delete\b"""), "Find with -delete on home", Severity.Dangerous),
         Pattern("find_exec_rm", Regex("""\bfind\s+.*-exec\s+rm\s+"""), "Find with -exec rm", Severity.Dangerous),
         Pattern("truncate_device", Regex("""\btruncate\s+-s\s+0\s+/dev/(?:sd|nvme|vd|hd|mmcblk)"""), "Truncate block device to zero", Severity.Catastrophic),
