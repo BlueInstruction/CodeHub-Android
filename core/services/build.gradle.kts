@@ -23,6 +23,10 @@ android {
 
 dependencies {
     implementation(project(":core:diagnostics"))
+    implementation(project(":build:api"))
+    implementation(project(":git:core"))
+    implementation(project(":devtools:packages"))
+    implementation(project(":terminal:termux"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
