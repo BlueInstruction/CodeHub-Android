@@ -92,7 +92,7 @@ class AndroidProjectBuildPipeline @Inject constructor(
             if (missingNames.isNotEmpty()) {
                 emit(AndroidPipelineEvent.Provisioning(missingNames))
                 val ensured = toolchainInstaller.ensureReady(readiness)
-                emit(AndroidPipelineEvent.Provisioned(ensured.missing.size.let { if (it == 0) ensured.components.filter { c -> c.installed }.map { c.component.name } else emptyList() }))
+                emit(AndroidPipelineEvent.Provisioned(ensured.missing.size.let { if (it == 0) ensured.components.filter { comp -> comp.installed }.map { comp -> comp.component.name } else emptyList() }))
                 if (!ensured.ready) {
                     return fail("Toolchain incomplete after provisioning: ${ensured.missing.joinToString(", ")}", "provision")
                 }
@@ -191,7 +191,6 @@ class AndroidProjectBuildPipeline @Inject constructor(
         }
 
         transition(AndroidPipelineState.Launching)
-        emit(AndroidPipelineEvent.AppLaunching(request.packageName, true))
         val launched = apkInstaller.launch(request.packageName)
         emit(AndroidPipelineEvent.AppLaunched(request.packageName, launched))
         if (!launched) {

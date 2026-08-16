@@ -100,8 +100,10 @@ class DefaultServiceManager @Inject constructor(
         }
     }
 
-    override suspend fun restart(name: String) = mutex.withLock {
-        registry[name]?.restart()
+    override suspend fun restart(name: String) {
+        mutex.withLock {
+            registry[name]?.restart()
+        }
     }
 
     override suspend fun get(name: String): ManagedService? = registry[name]
