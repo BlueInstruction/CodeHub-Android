@@ -27,8 +27,9 @@ class JavaProcessRunnerTest {
 
     @Test
     fun `run command with timeout kills the process`() = runTest {
+        val sleepBin = if (File("/system/bin/sleep").exists()) "/system/bin/sleep" else "sleep"
         val spec = ProcessSpec(
-            command = if (File("/system/bin/sleep").exists()) listOf("/system/bin/sleep", "30") else listOf("sleep", "30"),
+            command = listOf(sleepBin, "30"),
             workingDirectory = System.getProperty("java.io.tmpdir"),
             environment = emptyMap(),
             timeoutMs = 200
@@ -40,8 +41,9 @@ class JavaProcessRunnerTest {
 
     @Test
     fun `launch streams stdout then completes`() = runTest {
+        val echoBin = if (File("/system/bin/echo").exists()) "/system/bin/echo" else "echo"
         val spec = ProcessSpec(
-            command = if (File("/system/bin/echo").exists()) listOf("/system/bin/echo", "line1") else listOf("echo", "line1"),
+            command = listOf(echoBin, "line1"),
             workingDirectory = System.getProperty("java.io.tmpdir"),
             environment = emptyMap(),
             timeoutMs = 5_000

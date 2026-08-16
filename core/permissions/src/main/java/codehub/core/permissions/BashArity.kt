@@ -4327,10 +4327,10 @@ object BashArity {
         if (tokens.isEmpty()) return 0
         var maxArity = 1
         var accumulated = tokens.first()
+        table[accumulated]?.let { maxArity = it }
         for (i in 1 until tokens.size) {
             accumulated += " " + tokens[i]
-            val hit = table[accumulated]
-            if (hit != null) maxArity = hit
+            table[accumulated]?.let { maxArity = it }
         }
         return maxArity
     }
