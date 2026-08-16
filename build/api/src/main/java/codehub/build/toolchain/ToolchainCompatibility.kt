@@ -13,7 +13,7 @@ object ToolchainCompatibility {
         ToolchainComponent.Jdk to VersionRequirement(
             component = ToolchainComponent.Jdk,
             minVersion = "17",
-            maxVersion = "21",
+            maxVersion = "21.999",
             recommendedVersion = "17"
         ),
         ToolchainComponent.AndroidSdk to VersionRequirement(
