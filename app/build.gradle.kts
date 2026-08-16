@@ -74,6 +74,7 @@ dependencies {
     implementation(project(":terminal:termux"))
     implementation(project(":build:api"))
     implementation(project(":ai:gateway"))
+    implementation(project(":ai:agents"))
     implementation(project(":git:core"))
     implementation(project(":devtools:logcat"))
     implementation(project(":devtools:device"))

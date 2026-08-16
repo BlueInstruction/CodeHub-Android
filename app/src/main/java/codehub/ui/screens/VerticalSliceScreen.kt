@@ -46,6 +46,7 @@ fun VerticalSliceScreen(
     val state by viewModel.state.collectAsState()
     val events by viewModel.events.collectAsState()
     val workspacePath by viewModel.workspacePath.collectAsState()
+    val analysis by viewModel.analysis.collectAsState()
 
     CodeHubScaffold(title = "Vertical Slice") {
         Column(
@@ -66,6 +67,7 @@ fun VerticalSliceScreen(
                     state is PipelineState.LogcatStreaming
             )
             StatusCard(state)
+            analysis?.let { AnalysisCard(it) }
             EventsList(events)
         }
     }
@@ -210,4 +212,57 @@ private fun describeEvent(event: PipelineEvent): String = when (event) {
     is PipelineEvent.AiAnalysisTriggered -> "AI analysis triggered (${event.trigger})"
     is PipelineEvent.PipelineSucceeded -> "Pipeline succeeded: ${event.workspacePath}"
     is PipelineEvent.PipelineFailed -> "Pipeline FAILED: ${event.reason}"
+}
+
+@Composable
+private fun AnalysisCard(result: codehub.ai.agents.AnalysisResult) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "AI Failure Analysis",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+            Text(
+                text = "Type: ${result.failureType.name}  ·  Session: ${result.sessionId}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "Root-cause hypothesis",
+                style = MaterialTheme.typography.labelLarge
+            )
+            Text(
+                text = result.rootCauseHypothesis.take(800),
+                style = MaterialTheme.typography.bodyMedium,
+                fontFamily = FontFamily.Monospace
+            )
+            if (result.suggestedPatch != null) {
+                Text(
+                    text = "Suggested patch",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(6.dp))
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = result.suggestedPatch,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            if (result.errors != null) {
+                Text(
+                    text = "Errors: ${result.errors}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+    }
 }
