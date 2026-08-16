@@ -6,6 +6,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import codehub.terminal.api.TerminalBackend
 import codehub.terminal.api.TerminalBackendProvider
+import codehub.terminal.termux.pty.PtyBackendProvider
+import codehub.terminal.termux.pty.PtyTerminalSessionClientFactory
+import codehub.terminal.termux.pty.DefaultPtyTerminalSessionClientFactory
 import javax.inject.Singleton
 
 @Module
@@ -15,7 +18,13 @@ object TermuxModule {
     @Provides
     @Singleton
     fun provideTerminalProviderMap(
-        termux: TermuxBackendProvider
+        pty: PtyBackendProvider
     ): Map<TerminalBackend, @JvmSuppressWildcards TerminalBackendProvider> =
-        mapOf(TerminalBackend.Termux to termux)
+        mapOf(TerminalBackend.Termux to pty)
+
+    @Provides
+    @Singleton
+    fun providePtyClientFactory(
+        impl: DefaultPtyTerminalSessionClientFactory
+    ): PtyTerminalSessionClientFactory = impl
 }

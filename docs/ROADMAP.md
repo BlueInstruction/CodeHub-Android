@@ -15,7 +15,7 @@ Tracks the README implementation roadmap with current status.
 
 ## Phase 1: Local development
 
-- [x] Termux integration (`terminal.termux.TermuxBackendProvider`)
+- [x] Termux integration (`terminal.termux.pty.PtyBackendProvider` — real PTY via Apache 2.0 termux-app port)
 - [x] Shell execution (`core.process.JavaProcessRunner`)
 - [x] Git (`git.core.CliGitService`)
 - [ ] Clang availability check wired into build

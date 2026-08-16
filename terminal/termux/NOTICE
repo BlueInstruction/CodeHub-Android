@@ -1,0 +1,39 @@
+terminal/termux — NOTICE
+
+This module contains code derived from the Termux terminal-emulator
+library (https://github.com/termux/termux-app/tree/master/terminal-emulator),
+which is licensed under the Apache License, Version 2.0.
+
+The following files are derived from that source:
+  src/main/cpp/termux.c
+  src/main/cpp/Android.mk
+  src/main/java/com/termux/terminal/ByteQueue.java
+  src/main/java/com/termux/terminal/JNI.java
+  src/main/java/com/termux/terminal/KeyHandler.java
+  src/main/java/com/termux/terminal/Logger.java
+  src/main/java/com/termux/terminal/TerminalBuffer.java
+  src/main/java/com/termux/terminal/TerminalColorScheme.java
+  src/main/java/com/termux/terminal/TerminalColors.java
+  src/main/java/com/termux/terminal/TerminalEmulator.java
+  src/main/java/com/termux/terminal/TerminalOutput.java
+  src/main/java/com/termux/terminal/TerminalRow.java
+  src/main/java/com/termux/terminal/TerminalSession.java
+  src/main/java/com/termux/terminal/TerminalSessionClient.java
+  src/main/java/com/termux/terminal/TextStyle.java
+  src/main/java/com/termux/terminal/WcWidth.java
+
+Original copyright:
+  Copyright 2015-2023 Termux
+
+The original package name (com.termux.terminal) is preserved so that
+the JNI native symbols (Java_com_termux_terminal_JNI_*) continue to
+resolve without modification, and so that attribution to the original
+authors is unambiguous.
+
+All original Apache 2.0 terms continue to apply to these files; see
+LICENSE-APACHE-2.0.txt in this directory.
+
+The CodeHub wrapper code in this module (PtyBackendProvider, PtySession,
+PtyTerminalSessionClient and related Kotlin files under
+codehub/terminal/termux/) is original CodeHub code under the project's
+top-level LICENSE (MIT).
