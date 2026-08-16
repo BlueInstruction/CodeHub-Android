@@ -1,4 +1,4 @@
-package codehub.build.native
+package codehub.build.clang
 
 import codehub.build.api.BuildArtifact
 import codehub.build.api.BuildDiagnostic

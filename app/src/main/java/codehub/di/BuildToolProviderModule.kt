@@ -9,7 +9,7 @@ import codehub.build.api.BuildToolProvider
 import codehub.build.gradle.GradleBuildProvider
 import codehub.build.cmake.CMakeBuildProvider
 import codehub.build.ninja.NinjaBuildProvider
-import codehub.build.native.ClangBuildProvider
+import codehub.build.clang.ClangBuildProvider
 import javax.inject.Singleton
 
 @Module
