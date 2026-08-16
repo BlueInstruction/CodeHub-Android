@@ -1,217 +1,176 @@
 # CodeHub Vertical Slice — Operational Priority
 
-> Workspace → Termux → Git → CMake → Ninja → Clang → Build → APK → Install → Launch → Logcat → AI Analysis → Patch → Rebuild
+> **MVP**: New Android Project → Generate → Provision toolchain → Gradle/AGP → Sync → Build Debug APK → Install → Launch → Logcat → Fix → Rebuild
 
-This document defines the **operational priorities** for making the
-vertical slice real. It supersedes any earlier priority list.
-
-The slice is "fully operational" when the pipeline runs end-to-end on
-a real Android phone against a real C++/Vulkan project, with AI-driven
-patch-and-rebuild on failure.
+This document defines the **operational priorities** for making CodeHub
+Studio a real Android development workstation. The MVP is the
+Android-app pipeline above — not the C++/Vulkan/PS5 slice.
 
 ## Priority tiers
 
+### Tier 0 — Android-app MVP pipeline (highest priority, BLOCKING)
+
+The MVP. Nothing else matters until a user can open CodeHub, tap "New
+Android Project", and get a working APK on the device.
+
+#### Tier 0a — Toolchain Manager
+
+CodeHub must **not** assume the user has anything pre-installed. It
+must discover, install, manage, and verify:
+
+- **JDK** (OpenJDK 17 via Termux `pkg install openjdk-17`)
+- **Android SDK** (cmdline-tools + platform-tools + build-tools)
+- **Platform SDKs** (`platforms;android-35` etc. via `sdkmanager`)
+- **NDK** (`ndk;27.x.x` via `sdkmanager`)
+- **CMake** (Termux `pkg install cmake` or SDK-bundled CMake)
+- **Ninja** (Termux `pkg install ninja`)
+- **Clang** (Termux `pkg install clang` or NDK-bundled clang)
+- **Git** (Termux `pkg install git`)
+- **adb** (Termux `pkg install android-tools`)
+
+Implementation (in `build/api` as `codehub.build.toolchain`):
+- `ToolchainDescriptor` — typed descriptor for each component (name,
+  version, install path, source: Termux/SDK/System/Manual).
+- `ToolchainManager` — discovers what's installed, returns a
+  `ToolchainReadiness` report (like `TermuxReadiness` but for the full
+  Android toolchain).
+- `ToolchainInstaller` — installs missing components via the right
+  backend (Termux `pkg`, `sdkmanager`, or direct download for JDK).
+- `ToolchainCompatibility` — verifies version matrix:
+  - JDK 17 ↔ AGP 8.x ↔ Gradle 8.x
+  - NDK r25+ ↔ CMake 3.22+
+  - build-tools ↔ platform SDK
+- Exposes environment variables: `ANDROID_HOME`, `ANDROID_NDK_HOME`,
+  `JAVA_HOME`, `PATH` augmentation.
+
+#### Tier 0b — New Project Wizard
+
+The user taps "New Android Project" and gets a working Gradle project.
+
+Implementation (in `core/workspace` as `codehub.workspace.template`):
+- `ProjectTemplate` — sealed interface with variants:
+  - `EmptyCompose` — single `MainActivity` + Compose, Material 3
+  - `BasicViews` — single `MainActivity` + XML layout
+  - `NativeActivity` — NDK + JNI hello-world
+  - `AndroidLibrary` — library module skeleton
+- `ProjectTemplateRegistry` — versioned templates bundled as assets.
+- `ProjectGenerator` — takes template + package name + min SDK +
+  display name → writes the full project tree:
+  - `settings.gradle.kts`
+  - `build.gradle.kts` (root)
+  - `app/build.gradle.kts`
+  - `gradle/libs.versions.toml`
+  - `gradle/wrapper/gradle-wrapper.properties`
+  - `gradlew` + `gradlew.bat` (shell scripts)
+  - `app/src/main/AndroidManifest.xml`
+  - `app/src/main/java/<pkg>/MainActivity.kt`
+  - `app/src/main/res/values/{strings,themes,colors}.xml`
+  - `app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`
+  - `app/src/main/res/drawable/ic_launcher_foreground.xml`
+  - `.gitignore`
+  - `proguard-rules.pro`
+
+#### Tier 0c — AGP-aware Build
+
+`GradleBuildProvider` must understand AGP task semantics:
+- `assembleDebug` → produces APK at `app/build/outputs/apk/debug/`
+- `installDebug` → builds + installs in one step (skips separate
+  `pm install` if used)
+- `lint` → runs Android Lint
+- `bundleRelease` → produces AAB
+- `:app:dependencies` → dependency tree
+- Signing config: auto-generate debug keystore if missing.
+
+#### Tier 0d — Install + Launch + Logcat loop
+
+Already partially scaffolded:
+- `ApkInstaller.install()` runs `pm install -r <apk>`
+- `ApkInstaller.launch()` fires the launch intent via
+  `PackageInspector.launch()`
+- `LogcatService.snapshot()` captures recent entries
+- `LogcatService.stream()` streams new entries
+
+**Fix needed**: Logcat must filter by the launched app's PID, not just
+by tag/message substring. Use `logcat --pid=<pid>` (API 24+) or
+resolve PID from `pm pid <package>`.
+
+#### Tier 0e — AI-assisted fix-and-rebuild
+
+When the build fails, the AI must understand:
+- AGP task output (e.g. `:app:compileDebugKotlin FAILED`)
+- Kotlin compiler diagnostics (file:line:col format)
+- Android Lint output
+- Manifest merge errors
+
+The existing `BuildFailureAnalysis` + `ContextRetriever` handle the
+generic case; they need Android-specific context augmentation:
+- Include `AndroidManifest.xml` in context
+- Include `build.gradle.kts` in context
+- Include the failing Kotlin source file
+- Parse AGP output to extract the failing task + source location
+
 ### Tier 1 — True Termux PTY (DONE)
 
-Replaced the `ProcessBuilder`-based `TermuxBackendProvider` with a real
-interactive PTY layer ported from termux-app's Apache 2.0
-`terminal-emulator/` module.
+Real interactive PTY via Apache 2.0 termux-app port. See commit
+`b03d467`. `PtyBackendProvider` replaces the old ProcessBuilder-based
+`TermuxBackendProvider`.
 
-Status: **implemented**.
+### Tier 2 — llama.cpp + ggml native bindings (DEFERRED)
 
-Why it matters:
-- PS5 emulator development requires an **interactive shell** with
-  signals, stdin/stdout, and long-running processes.
-- `ProcessBuilder` cannot do PTY emulation, raw mode, or signal
-  forwarding. It can only run commands and capture output.
-- Every downstream build/git/cmake step is a child of an interactive
-  shell, so the PTY is the foundation of everything else.
+On-device LLM inference. Layer 3 concern. Defer until Tier 0 MVP works.
 
-What was ported:
-- `terminal-emulator/src/main/jni/termux.c` (Apache 2.0) →
-  `terminal/termux/src/main/cpp/termux.c` — forks /dev/ptmx, setsid,
-  dup2 stdio, IUTF8 mode, TIOCSWINSZ resize.
-- `terminal-emulator/src/main/java/com/termux/terminal/*` (Apache 2.0) →
-  `terminal/termux/src/main/java/com/termux/terminal/*` — preserved
-  original package name so JNI symbols resolve without modification.
-  Includes TerminalSession, TerminalEmulator, TerminalBuffer,
-  TerminalRow, ByteQueue, KeyHandler, TerminalColors, TextStyle, etc.
-- `terminal-emulator/src/main/jni/Android.mk` →
-  `terminal/termux/src/main/cpp/Android.mk` (ndk-build).
-- Apache 2.0 LICENSE + NOTICE files added at `terminal/termux/`.
+### Tier 3 — C++/Vulkan vertical slice (DEFERRED)
 
-What was added (original CodeHub code, MIT):
-- `codehub.terminal.termux.pty.PtyBackendProvider` — implements
-  `TerminalBackendProvider`, wraps `TerminalSession`, exposes a
-  `Flow<TerminalOutput>` with rendered screen text + exit events.
-- `codehub.terminal.termux.pty.PtyEnvironment` — builds HOME/PREFIX/
-  PATH/LD_LIBRARY_PATH/TERM/LANG/TMPDIR env map for the forked shell.
-- `codehub.terminal.termux.pty.DefaultPtyTerminalSessionClientFactory`
-  — creates `TerminalSessionClient` instances that bridge
-  `TerminalSession` callbacks to CodeHub's `Flow<TerminalOutput>` and
-  `DiagnosticSink`.
-- `terminal/termux/build.gradle.kts` — wired `externalNativeBuild`
-  with `ndkBuild` path; abiFilters `arm64-v8a` + `x86_64`.
-- `terminal/termux/consumer-rules.pro` — keep rules for
-  `com.termux.terminal.**` and native methods (proguard-safe JNI).
-- `PtyEnvironmentTest` — 11 tests for env builder + shell resolver.
+The original `Workspace → Termux → Git → CMake → Ninja → Clang → APK →
+Install → Logcat → AI` pipeline. This is the Layer 2 (Native/System
+Development) proof, not the daily driver. Defer until Tier 0 MVP works.
 
-What was removed:
-- Old `codehub.terminal.termux.TermuxBackendProvider` — the
-  ProcessBuilder-based stub. Replaced by `PtyBackendProvider`.
+### Tier 4 — AI engineering loop with patch+rebuild (DEFERRED)
 
-### Tier 2 — llama.cpp + ggml native bindings
+Full autonomous fix-and-rebuild with patch review. Builds on Tier 0e.
 
-Convert `OfflineProviderClient` from a stub into actual on-device
-inference.
+### Tier 5 — Android Code Studio as architectural reference
 
-Why it matters:
-- The AI engineering loop (Tier 4) requires on-device inference to be
-  truly mobile. Online-only providers defeat the purpose.
-- `llama.cpp/examples/llama.android/` is a complete NDK + JNI + Kotlin
-  reference. `ggml` provides 7 Android ARM variants + Vulkan backend.
-
-Implementation:
-- Vendor `ggml` + `llama.cpp` as native libs in
-  `integrations/pocketpal/src/main/cpp/`.
-- Port `examples/llama.android/lib/src/main/java/com/arm/aichat/` into
-  `integrations/pocketpal/src/main/java/codehub/integrations/pocketpal/`
-  as `InferenceEngine`, `AiChat`, `GgufMetadataReader`.
-- Wire `PocketPalBridge.client(config)` to return a real
-  `LlamaCppProviderClient` that streams tokens via `Flow<ChatChunk>`.
-- Replace `OfflineProviderClient` in `DefaultAiGateway.createClient()`
-  with the PocketPal bridge.
-- Build setup: NDK r25+, two-pass CMake (host vulkan-shaders-gen, then
-  cross-compile), per-ABI `.so` packaging, Play Asset Delivery for
-  GGUF models.
-
-### Tier 3 — Real Build Pipeline
-
-The `BuildPipeline` orchestrator exists as a state machine, but it
-must become **genuinely executable** end-to-end.
-
-Implementation:
-- Verify each step actually runs:
-  - `TermuxBootstrap.probe()` correctly detects missing tools.
-  - `TermuxBootstrap.installPackages()` actually installs them.
-  - `GitService.status()` parses `git status --porcelain=v2` correctly.
-  - `CMakeBuildProvider` produces a working build directory.
-  - `NinjaBuildProvider` runs the build.
-  - `ClangBuildProvider` compiles ad-hoc C++ sources.
-  - `ApkInstaller.discoverApks()` finds the resulting APK.
-  - `ApkInstaller.install()` runs `pm install` successfully.
-  - `ApkInstaller.launch()` starts the app.
-  - `LogcatService.snapshot()` captures recent entries.
-- Fix the hardcoded workspace path in `VerticalSliceViewModel`.
-- Wire a real Android folder picker (SAF or storage access).
-- Surface logcat entries in the UI (state is set but not displayed).
-
-### Tier 4 — AI Engineering Loop
-
-The post-build cycle: `Build failure → diagnostics → context retrieval
-→ local/online agent → patch → diff → rebuild`.
-
-Implementation:
-- `BuildFailureAnalysis` exists but only produces a single-turn
-  hypothesis + patch suggestion. It must become a **loop**:
-  1. Build fails → `BuildPipeline` emits `AiAnalysisTriggered`.
-  2. `BuildFailureAnalysis.analyze()` produces a patch.
-  3. Patch is **staged** (not applied) for user review.
-  4. User approves → patch is applied via `FileSystemGateway.write()`.
-  5. `BuildPipeline.execute()` re-runs.
-  6. If rebuild succeeds, loop ends. If not, repeat with updated context.
-- Add a `PatchReviewScreen` for the user to see the diff and approve.
-- Add iteration budget enforcement (`IterationBudget`) to cap retries.
-
-### Tier 5 — Android Code Studio as reference
-
-Use ACS as an **architectural reference** for LSP, Gradle tooling,
-Logcat, and APK installation. Do **not** port GPL-3.0 code.
-
-Implementation:
-- Re-implement `ILanguageServer` contract (from `core/lsp-api/`) in
-  `editor/api`. Add a `LspStdioClient` that speaks LSP over stdio for
-  clangd (Termux package).
-- Re-implement `GradleBuildService` (from `core/app/.../services/builder/`)
-  using the Gradle Tooling API (not `./gradlew` subprocess) in
-  `build/gradle`. Provides structured project model + task execution.
-- Use `LogWire` (from `external/logwire/`) as a reference for
-  structured logcat parsing in `devtools/logcat`.
-- Use `IPackageInstaller` (from `core/app/.../handlers/system/installer/`)
-  as a reference for the install-session API in `devtools/packages`.
+Use ACS as a **behavioral reference** for:
+- How it manages the environment inside `/data/data/.../files/usr`
+- How it handles dpkg, repositories, toolchains, conflicts, recovery
+- LSP client contracts (re-implement, don't copy GPL code)
+- Gradle Tooling API integration (re-implement)
+- LogWire structured logcat parsing (re-implement)
 
 ### Tier 6 — termux-packages dependency knowledge base
 
-Codegen a dependency JSON snapshot from termux-packages'
-`build.sh` files into `terminal/termux/TermuxBootstrap`.
+Codegen a dependency JSON snapshot for pre-flight checks.
 
-Why it matters:
-- Lets `TermuxBootstrap` say "installing cmake also pulls libarchive,
-  libc++, libcurl, libexpat, jsonjsoncpp, libuv, rhash, zlib (recommends
-  clang, make)" before running `pkg install`.
-- Critical for large CMake/Clang/Vulkan projects that have deep
-  dependency trees.
+### Tier 7 — termux-x11 (DEFERRED)
 
-Implementation:
-- Write a Python script that walks `packages/*/build.sh` and emits a
-  JSON map of `package → {depends, recommends, conflicts, breaks}`.
-- Ship the JSON as an asset in `terminal/termux/src/main/assets/`.
-- Update `TermuxBootstrap.probe()` to load the JSON and report missing
-  transitive dependencies in `TermuxReadiness.issues`.
+External APK dependency. Not needed for Tier 0 MVP.
 
-### Tier 7 — termux-x11 (deferred)
+### Tier 8 — OpenClaw + Hermes as provider backends (DEFERRED)
 
-Becomes important when CodeHub reaches the stage of running GUI/Linux
-tools inside the app. Not a priority for the initial vertical slice.
+AI Gateway backends. Layer 3 concern. Defer until Tier 0 MVP works.
 
-When the time comes:
-- Keep termux-x11 as an **external APK dependency** (do not embed GPL
-  code into CodeHub).
-- Port the Chromium-BSD `input/` package (TouchInputHandler, etc.) into
-  `editor/vscodeweb` for touch→mouse/keyboard mapping in the WebView.
-- Adopt the `memfd + AHardwareBuffer + Unix-socket fd passing` IPC
-  pattern from `buffer.c` (re-implement from spec, don't copy GPL).
+## Definition of MVP done
 
-### Tier 8 — OpenClaw + Hermes as provider backends
+The MVP is "fully operational" when:
 
-Keep OpenClaw and Hermes as **backends** behind `AiGateway`, not as
-the core. CodeHub's UI must not be tightly coupled to either.
+1. A user opens CodeHub on a phone with Termux installed (but no JDK,
+   no Android SDK, no NDK, no Gradle).
+2. CodeHub's Toolchain Manager detects what's missing and offers to
+   install it.
+3. User taps "New Android Project" → picks Empty Compose → enters
+   package name + display name.
+4. CodeHub generates the full Gradle project tree.
+5. CodeHub runs `./gradlew :app:assembleDebug` (after auto-generating a
+   debug keystore).
+6. The APK is discovered at `app/build/outputs/apk/debug/`.
+7. CodeHub installs it via `pm install`.
+8. CodeHub launches it via `am start`.
+9. CodeHub streams logcat filtered to that app's PID.
+10. If the build fails, the AI agent is invoked with the AGP output,
+    Kotlin diagnostics, and relevant source files — and suggests a
+    patch the user can approve.
 
-Implementation:
-- `integrations/openclaw/OpenClawBridge.client(config)` returns a
-  `OpenClawProviderClient` that talks to a running OpenClaw instance
-  (Termux subprocess or remote).
-- `integrations/hermes/HermesBridge.client(config)` returns a
-  `HermesProviderClient` that talks to a Hermes Gateway.
-- Both are registered via `AiGateway.registerProvider()` and selected
-  by `providerId` in `ChatRequest`.
-- `PermissionManager` and `AgentAuditLog` apply uniformly across all
-  providers.
-
-## Out of scope for this phase
-
-- New modules (everything lands in existing modules).
-- Vulkan / SPIR-V tooling beyond `StubVulkanInspector`.
-- Plugin architecture.
-- Online agent backends beyond the existing HTTP client.
-- Editor WebView embedding (Phase 2 — vscode.dev fallback remains).
-- PS5 emulator itself (workload, not component).
-
-## Definition of operational
-
-The vertical slice is "fully operational" when:
-
-1. A user opens CodeHub on an Android phone with Termux installed.
-2. Picks a real C++/CMake project from the filesystem.
-3. Taps "Run pipeline".
-4. CodeHub runs `git status`, then `cmake -S . -B build -G Ninja`,
-   then `ninja -C build`, then locates the resulting artifact.
-5. If the artifact is an APK, CodeHub installs and launches it.
-6. CodeHub streams `logcat` filtered to that package.
-7. If any step fails, the AI agent is invoked with the failure context
-   and the user sees a suggested patch.
-8. The user approves the patch; CodeHub applies it and rebuilds.
-9. The rebuild succeeds.
-
-When that loop completes on a real device, CodeHub is a true mobile
-engineering workstation.
+When that loop completes on a real device, CodeHub Studio is a true
+Android development workstation. Everything else (C++, Vulkan,
+emulators, llama.cpp) layers on top.

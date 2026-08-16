@@ -1,0 +1,1 @@
+-keep class codehub.build.api.** { *; }

@@ -3,7 +3,6 @@
 /local.properties
 /.idea
 .DS_Store
-/build
 /captures
 .externalNativeBuild
 .cxx
@@ -14,3 +13,9 @@ local.properties
 *.dex
 *.class
 hs_err_pid*
+
+# Gradle build output directories (at any module depth, but NOT the build/ module group)
+*/build/
+*/*/build/
+*/*/*/build/
+*/*/*/*/build/
