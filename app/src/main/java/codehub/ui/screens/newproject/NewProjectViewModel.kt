@@ -101,6 +101,17 @@ class NewProjectViewModel @Inject constructor(
         validate()
     }
 
+    fun appendSubdir(displayName: String) {
+        val sanitized = displayName.trim()
+            .replace(Regex("[^A-Za-z0-9._-]"), "_")
+            .replace(Regex("_+"), "_")
+            .trim('_')
+        if (sanitized.isEmpty()) return
+        val current = _uiState.value.projectPath.trimEnd('/')
+        _uiState.value = _uiState.value.copy(projectPath = "$current/$sanitized")
+        validate()
+    }
+
     fun updateTask(value: String) {
         _uiState.value = _uiState.value.copy(task = value)
         validate()

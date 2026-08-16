@@ -29,6 +29,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,6 +37,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberLauncherForActivityResult
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -126,6 +128,17 @@ private fun ProjectDetailsForm(
     viewModel: NewProjectViewModel,
     isRunning: Boolean
 ) {
+    val folderPicker = rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) {
+            val path = uriToPath(uri)
+            if (path != null) {
+                viewModel.updateProjectPath(path)
+            }
+        }
+    }
+
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Project details", style = MaterialTheme.typography.titleLarge)
@@ -158,7 +171,54 @@ private fun ProjectDetailsForm(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = { if (!isRunning) folderPicker.launch(null) },
+                    enabled = !isRunning
+                ) {
+                    Text("Pick folder")
+                }
+                OutlinedButton(
+                    onClick = { if (!isRunning) viewModel.appendSubdir(state.displayName) },
+                    enabled = !isRunning && state.projectPath.isNotBlank() && state.displayName.isNotBlank()
+                ) {
+                    Text("Append display name")
+                }
+            }
+            Text(
+                text = "Pick an existing folder (will be used as parent) or type a new path. " +
+                    "Use 'Append display name' to create a subdirectory named after the app.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
+    }
+}
+
+private fun uriToPath(uri: android.net.Uri): String? {
+    val path = uri.path ?: return null
+    return when {
+        path.startsWith("/tree/") -> {
+            val after = path.removePrefix("/tree/")
+            val decoded = android.net.Uri.decode(after).replace(":", "/")
+            if (decoded.startsWith("primary/")) {
+                "/storage/emulated/0/${decoded.removePrefix("primary/")}"
+            } else if (decoded.startsWith("/")) {
+                decoded
+            } else {
+                "/storage/$decoded"
+            }
+        }
+        path.startsWith("/document/") -> {
+            val after = path.removePrefix("/document/")
+            val decoded = android.net.Uri.decode(after).replace(":", "/")
+            if (decoded.startsWith("primary/")) {
+                "/storage/emulated/0/${decoded.removePrefix("primary/")}"
+            } else {
+                decoded
+            }
+        }
+        else -> null
     }
 }
 

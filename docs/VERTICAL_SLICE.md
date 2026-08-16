@@ -150,6 +150,53 @@ External APK dependency. Not needed for Tier 0 MVP.
 
 AI Gateway backends. Layer 3 concern. Defer until Tier 0 MVP works.
 
+## MVP gaps closed
+
+Three gaps were identified that prevented the MVP from working on a
+clean device. All three are now closed:
+
+### Gap #1 — Gradle Wrapper bootstrap (DONE)
+
+The ProjectGenerator now bundles the real Apache 2.0 Gradle wrapper
+files as assets (`gradle-wrapper.jar`, `gradlew`, `gradlew.bat`) and
+copies them into every generated project. The wrapper is the single
+source of truth for the project's Gradle version — CodeHub does NOT
+install Gradle globally via Termux pkg.
+
+Toolchain invariant enforced: JDK/CMake/Ninja/Clang/Git/Adb go through
+Termux pkg (generic Linux tools). Android SDK/Platform Tools/Build
+Tools/Platform SDK/NDK go through sdkmanager into CodeHub's own data
+dir, isolating them from Termux packages. Gradle is NEVER installed
+globally.
+
+### Gap #2 — AI failure analysis with real context (DONE)
+
+BuildFailureAnalysis now gathers real project context via
+ProjectContextGatherer:
+- settings.gradle.kts, root build.gradle.kts, app/build.gradle.kts
+- gradle/libs.versions.toml
+- AndroidManifest.xml
+- gradle.properties, gradle-wrapper.properties
+- Source files referenced by compiler diagnostics (up to 8 files)
+- Build result (status, exit code, duration, stdout, stderr)
+- Compiler/AGP diagnostics (up to 20 entries)
+- Logcat filtered to the package (up to 50 entries)
+
+The AI receives all of this and responds with ROOT_CAUSE / EVIDENCE /
+PATCH sections, parsed and surfaced in the UI.
+
+AndroidProjectBuildPipeline emits AiAnalysisTriggered events on sync
+failure, build failure, and install failure — each with the full
+context. NewProjectViewModel subscribes and invokes BuildFailureAnalysis.
+
+### Gap #3 — SAF folder picker (DONE)
+
+NewProjectScreen now has a "Pick folder" button that launches Android's
+Storage Access Framework (OpenDocumentTree). The returned tree URI is
+converted to a real filesystem path so Gradle (running via Termux) can
+access it. An "Append display name" button creates a subdirectory named
+after the app (sanitized). The user can also type a path manually.
+
 ## Definition of MVP done
 
 The MVP is "fully operational" when:
@@ -159,8 +206,9 @@ The MVP is "fully operational" when:
 2. CodeHub's Toolchain Manager detects what's missing and offers to
    install it.
 3. User taps "New Android Project" → picks Empty Compose → enters
-   package name + display name.
-4. CodeHub generates the full Gradle project tree.
+   package name + display name → picks a folder via SAF.
+4. CodeHub generates the full Gradle project tree (including the real
+   gradle-wrapper.jar).
 5. CodeHub runs `./gradlew :app:assembleDebug` (after auto-generating a
    debug keystore).
 6. The APK is discovered at `app/build/outputs/apk/debug/`.
@@ -168,8 +216,9 @@ The MVP is "fully operational" when:
 8. CodeHub launches it via `am start`.
 9. CodeHub streams logcat filtered to that app's PID.
 10. If the build fails, the AI agent is invoked with the AGP output,
-    Kotlin diagnostics, and relevant source files — and suggests a
-    patch the user can approve.
+    Kotlin diagnostics, Gradle files, manifest, source files, and
+    logcat — and suggests a ROOT_CAUSE / EVIDENCE / PATCH the user
+    can review.
 
 When that loop completes on a real device, CodeHub Studio is a true
 Android development workstation. Everything else (C++, Vulkan,
