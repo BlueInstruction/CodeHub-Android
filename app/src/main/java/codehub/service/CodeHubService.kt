@@ -11,7 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import codehub.CodeHubApplication
 import codehub.MainActivity
-import codehub.R
+import io.codehub.R
 import codehub.core.services.ServiceManager
 import kotlinx.coroutines.launch
 import javax.inject.Inject

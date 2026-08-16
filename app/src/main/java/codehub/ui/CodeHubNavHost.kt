@@ -30,7 +30,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import codehub.R
+import io.codehub.R
 import codehub.ui.screens.AiScreen
 import codehub.ui.screens.BuildScreen
 import codehub.ui.screens.DevicesScreen

@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "codehub"
+    namespace = "io.codehub"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "codehub"
+        applicationId = "io.codehub"
         minSdk = 29
         targetSdk = 35
         versionCode = 1
