@@ -45,6 +45,7 @@ class ProjectGeneratorTest {
                 displayName = "Sample"
             )
         )
+        assertThat(result.success).isTrue()
         val settings = File(projectDir, "settings.gradle.kts").readText()
         assertThat(settings).contains("rootProject.name = \"Sample\"")
         assertThat(settings).contains("include(\":app\")")
@@ -62,6 +63,7 @@ class ProjectGeneratorTest {
                 displayName = "Test"
             )
         )
+        assertThat(result.success).isTrue()
         val appGradle = File(projectDir, "app/build.gradle.kts").readText()
         assertThat(appGradle).contains("applicationId = \"com.test.app\"")
         assertThat(appGradle).contains("namespace = \"com.test.app\"")
@@ -82,6 +84,7 @@ class ProjectGeneratorTest {
                 displayName = "Test"
             )
         )
+        assertThat(result.success).isTrue()
         val mainActivity = File(projectDir, "app/src/main/java/com/test/app/MainActivity.kt").readText()
         assertThat(mainActivity).contains("package com.test.app")
         assertThat(mainActivity).contains("class MainActivity : ComponentActivity()")
@@ -101,6 +104,7 @@ class ProjectGeneratorTest {
                 displayName = "Test"
             )
         )
+        assertThat(result.success).isTrue()
         val catalog = File(projectDir, "gradle/libs.versions.toml").readText()
         assertThat(catalog).contains("agp = \"8.7.3\"")
         assertThat(catalog).contains("kotlin = \"2.0.21\"")
@@ -119,6 +123,7 @@ class ProjectGeneratorTest {
                 displayName = "Test"
             )
         )
+        assertThat(result.success).isTrue()
         val wrapper = File(projectDir, "gradle/wrapper/gradle-wrapper.properties").readText()
         assertThat(wrapper).contains("gradle-8.10.2-bin.zip")
     }
@@ -135,6 +140,7 @@ class ProjectGeneratorTest {
                 displayName = "Test App"
             )
         )
+        assertThat(result.success).isTrue()
         val manifest = File(projectDir, "app/src/main/AndroidManifest.xml").readText()
         assertThat(manifest).contains("android:name=\".MainActivity\"")
         assertThat(manifest).contains("android.intent.category.LAUNCHER")
@@ -178,6 +184,7 @@ class ProjectGeneratorTest {
                 displayName = "Lib"
             )
         )
+        assertThat(result.success).isTrue()
         val appGradle = File(projectDir, "app/build.gradle.kts").readText()
         assertThat(appGradle).doesNotContain("applicationId")
         assertThat(appGradle).contains("android.library")
@@ -262,6 +269,7 @@ class ProjectGeneratorTest {
                 displayName = "Test"
             )
         )
+        assertThat(result.success).isTrue()
         val gradlew = File(projectDir, "gradlew")
         assertThat(gradlew.exists()).isTrue()
         assertThat(gradlew.canExecute()).isTrue()
@@ -279,6 +287,7 @@ class ProjectGeneratorTest {
                 displayName = "Test App"
             )
         )
+        assertThat(result.success).isTrue()
         val readme = File(projectDir, "README.md").readText()
         assertThat(readme).contains("Test App")
         assertThat(readme).contains("com.test.app")
@@ -298,6 +307,7 @@ class ProjectGeneratorTest {
                 displayName = "Test"
             )
         )
+        assertThat(result.success).isTrue()
         val jar = File(projectDir, "gradle/wrapper/gradle-wrapper.jar")
         assertThat(jar.exists()).isTrue()
         assertThat(jar.length()).isGreaterThan(1000L)
@@ -320,6 +330,7 @@ class ProjectGeneratorTest {
                 displayName = "Test"
             )
         )
+        assertThat(result.success).isTrue()
         val gradlew = File(projectDir, "gradlew")
         assertThat(gradlew.exists()).isTrue()
         val content = gradlew.readText()
@@ -354,6 +365,7 @@ class ProjectGeneratorTest {
                 displayName = "Test"
             )
         )
+        assertThat(result.success).isTrue()
         val props = File(projectDir, "gradle/wrapper/gradle-wrapper.properties").readText()
         assertThat(props).contains("gradle-${template.gradleVersion}-bin.zip")
     }
