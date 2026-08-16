@@ -7,7 +7,7 @@ import androidx.room.TypeConverters
 @Database(
     entities = [ProjectEntity::class],
     version = 1,
-    exportSchema = true
+    exportSchema = false
 )
 abstract class WorkspaceDatabase : RoomDatabase() {
     abstract fun projectDao(): ProjectDao

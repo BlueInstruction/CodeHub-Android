@@ -1,9 +1,11 @@
-package codehub.build.api
+package codehub.di
 
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import codehub.build.api.BuildTool
+import codehub.build.api.BuildToolProvider
 import codehub.build.gradle.GradleBuildProvider
 import codehub.build.cmake.CMakeBuildProvider
 import codehub.build.ninja.NinjaBuildProvider
