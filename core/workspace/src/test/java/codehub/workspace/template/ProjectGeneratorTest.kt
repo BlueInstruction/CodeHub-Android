@@ -371,9 +371,7 @@ private class TestWrapperAssets : WrapperAssets {
         "CLASSPATH=APP_HOME/gradle/wrapper/gradle-wrapper.jar",
         "exec java -classpath CLASSPATH org.gradle.wrapper.GradleWrapperMain",
         "# This script contains GradleWrapperMain and APP_HOME and CLASSPATH"
-    ).joinToString("
-") + "
-".repeat(100)
+    ).joinToString("\\n") + "\\n".repeat(100)
     private val REAL_GRADLEW_BAT = "@rem Gradle startup script for Windows\r\n"
     private val FAKE_JAR_BYTES = ByteArray(2000) { 0 }
 }
