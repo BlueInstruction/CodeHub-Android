@@ -454,7 +454,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
-        text = "Hello, ${'$'}$name!",
+        text = "Hello, ${'$'}name!",
         modifier = modifier.padding(24.dp)
     )
 }
@@ -475,7 +475,7 @@ class MainActivity : AppCompatActivity() {
         var count = 0
         button.setOnClickListener {
             count++
-            textView.text = "Clicked ${'$'}$count times"
+            textView.text = "Clicked ${'$'}count times"
         }
     }
 }
@@ -501,7 +501,7 @@ class MainActivity : NativeActivity() {
 
 object Library {
     const val VERSION = "0.1.0"
-    fun greet(name: String): String = "Hello from $packageName, ${'$'}$name!"
+    fun greet(name: String): String = "Hello from $packageName, ${'$'}name!"
 }
 """
         }
