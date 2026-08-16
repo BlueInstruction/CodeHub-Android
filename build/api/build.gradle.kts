@@ -24,7 +24,6 @@ android {
 dependencies {
     implementation(project(":core:diagnostics"))
     implementation(project(":core:process"))
-    implementation(project(":core:services"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
