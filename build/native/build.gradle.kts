@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "codehub.build.nativetool"
+    namespace = "codehub.build.native"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

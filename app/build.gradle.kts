@@ -76,7 +76,6 @@ dependencies {
     implementation(project(":build:gradle"))
     implementation(project(":build:cmake"))
     implementation(project(":build:ninja"))
-    implementation(project(":build:nativetool"))
     implementation(project(":build:native"))
     implementation(project(":ai:gateway"))
     implementation(project(":ai:agents"))
