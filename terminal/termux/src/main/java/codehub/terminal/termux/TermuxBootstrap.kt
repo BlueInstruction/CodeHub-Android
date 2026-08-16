@@ -82,7 +82,7 @@ class TermuxBootstrap @Inject constructor(
                 source = "TermuxBootstrap",
                 message = if (ready) "Termux ready" else "Termux missing: ${missing.joinToString(",")}",
                 reason = if (ready) "all_critical_tools_present" else "missing_tools",
-                attributes = toolResults.map { it.key.name to it.value.toString() }
+                attributes = toolResults.map { it.key.name to it.value.toString() }.toMap()
             )
         )
 

@@ -56,7 +56,7 @@ class DefaultPtyTerminalSessionClientFactory @Inject constructor() : PtyTerminal
 
         override fun setTerminalShellPid(session: TerminalSession, pid: Int) {}
 
-        override fun getTerminalCursorStyle(): Integer? = null
+        override fun getTerminalCursorStyle(): Int? = null
 
         override fun logError(tag: String, message: String) { Log.e(tag, message) }
         override fun logWarn(tag: String, message: String) { Log.w(tag, message) }
