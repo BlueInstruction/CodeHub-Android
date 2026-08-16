@@ -1,4 +1,5 @@
 package codehub
+import io.codehub.R
 
 import android.app.Application
 import android.app.NotificationChannel
