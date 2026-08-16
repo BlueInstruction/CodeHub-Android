@@ -37,7 +37,7 @@ class ProjectGeneratorTest {
     fun `EmptyCompose writes settings gradle with project name`() = runTest {
         val projectDir = tmp.newFolder("compose-named")
         val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
-        generator.generate(
+        val result = generator.generate(
             ProjectGenerationRequest(
                 template = template,
                 projectPath = projectDir.absolutePath,
@@ -54,7 +54,7 @@ class ProjectGeneratorTest {
     fun `EmptyCompose writes app build gradle with applicationId`() = runTest {
         val projectDir = tmp.newFolder("compose-appid")
         val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
-        generator.generate(
+        val result = generator.generate(
             ProjectGenerationRequest(
                 template = template,
                 projectPath = projectDir.absolutePath,
@@ -74,7 +74,7 @@ class ProjectGeneratorTest {
     fun `EmptyCompose writes MainActivity with Compose content`() = runTest {
         val projectDir = tmp.newFolder("compose-activity")
         val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
-        generator.generate(
+        val result = generator.generate(
             ProjectGenerationRequest(
                 template = template,
                 projectPath = projectDir.absolutePath,
@@ -93,7 +93,7 @@ class ProjectGeneratorTest {
     fun `EmptyCompose writes version catalog with AGP and Kotlin versions`() = runTest {
         val projectDir = tmp.newFolder("compose-versions")
         val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
-        generator.generate(
+        val result = generator.generate(
             ProjectGenerationRequest(
                 template = template,
                 projectPath = projectDir.absolutePath,
@@ -111,7 +111,7 @@ class ProjectGeneratorTest {
     fun `EmptyCompose writes gradle wrapper with correct version`() = runTest {
         val projectDir = tmp.newFolder("compose-wrapper")
         val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
-        generator.generate(
+        val result = generator.generate(
             ProjectGenerationRequest(
                 template = template,
                 projectPath = projectDir.absolutePath,
@@ -127,7 +127,7 @@ class ProjectGeneratorTest {
     fun `EmptyCompose writes AndroidManifest with launcher activity`() = runTest {
         val projectDir = tmp.newFolder("compose-manifest")
         val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
-        generator.generate(
+        val result = generator.generate(
             ProjectGenerationRequest(
                 template = template,
                 projectPath = projectDir.absolutePath,
@@ -170,7 +170,7 @@ class ProjectGeneratorTest {
     fun `AndroidLibrary template does not write applicationId`() = runTest {
         val projectDir = tmp.newFolder("lib-app")
         val template = ProjectTemplateRegistry.get(ProjectTemplateKind.AndroidLibrary)
-        generator.generate(
+        val result = generator.generate(
             ProjectGenerationRequest(
                 template = template,
                 projectPath = projectDir.absolutePath,
@@ -254,7 +254,7 @@ class ProjectGeneratorTest {
     fun `generated gradlew is executable`() = runTest {
         val projectDir = tmp.newFolder("exec-test")
         val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
-        generator.generate(
+        val result = generator.generate(
             ProjectGenerationRequest(
                 template = template,
                 projectPath = projectDir.absolutePath,
@@ -271,7 +271,7 @@ class ProjectGeneratorTest {
     fun `README contains template and package info`() = runTest {
         val projectDir = tmp.newFolder("readme-test")
         val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
-        generator.generate(
+        val result = generator.generate(
             ProjectGenerationRequest(
                 template = template,
                 projectPath = projectDir.absolutePath,
@@ -290,7 +290,7 @@ class ProjectGeneratorTest {
     fun `gradle-wrapper jar is binary and non-trivial`() = runTest {
         val projectDir = tmp.newFolder("wrapper-jar")
         val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
-        generator.generate(
+        val result = generator.generate(
             ProjectGenerationRequest(
                 template = template,
                 projectPath = projectDir.absolutePath,
@@ -312,7 +312,7 @@ class ProjectGeneratorTest {
     fun `gradlew is the real Gradle wrapper script`() = runTest {
         val projectDir = tmp.newFolder("real-gradlew")
         val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
-        generator.generate(
+        val result = generator.generate(
             ProjectGenerationRequest(
                 template = template,
                 projectPath = projectDir.absolutePath,
@@ -346,7 +346,7 @@ class ProjectGeneratorTest {
     fun `gradle-wrapper properties contains the template Gradle version`() = runTest {
         val projectDir = tmp.newFolder("wrapper-version")
         val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
-        generator.generate(
+        val result = generator.generate(
             ProjectGenerationRequest(
                 template = template,
                 projectPath = projectDir.absolutePath,
@@ -371,7 +371,7 @@ private class TestWrapperAssets : WrapperAssets {
         "CLASSPATH=APP_HOME/gradle/wrapper/gradle-wrapper.jar",
         "exec java -classpath CLASSPATH org.gradle.wrapper.GradleWrapperMain",
         "# This script contains GradleWrapperMain and APP_HOME and CLASSPATH"
-    ).joinToString("\\n") + "\\n".repeat(100)
+    ).joinToString("\n") + "\n".repeat(100)
     private val REAL_GRADLEW_BAT = "@rem Gradle startup script for Windows\r\n"
     private val FAKE_JAR_BYTES = ByteArray(2000) { 0 }
 }
