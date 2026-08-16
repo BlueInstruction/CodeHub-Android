@@ -76,9 +76,9 @@ class CodeServerEditorService @Inject constructor(
         eventStream.tryEmit(EditorEvent.Stopped(backend))
     }
 
-    override suspend fun restart(): EditorEndpoint? {
+    override suspend fun restart() {
         stop()
-        return start(EditorBackend.CodeServer)
+        start(EditorBackend.CodeServer)
     }
 
     override suspend fun onStart() {
