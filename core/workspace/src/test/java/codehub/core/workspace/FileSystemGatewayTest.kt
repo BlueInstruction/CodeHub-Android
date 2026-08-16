@@ -47,8 +47,9 @@ class FileSystemGatewayTest {
 
     @Test
     fun `move relocates file`() = runTest {
-        val src = File(tmp.newFolder("mv"), "from.txt")
-        val dst = File(tmp.newFolder("mv"), "to.txt")
+        val folder = tmp.newFolder("mv")
+        val src = File(folder, "from.txt")
+        val dst = File(folder, "to.txt")
         src.writeText("payload")
         gateway.move(src.absolutePath, dst.absolutePath)
         assertThat(src.exists()).isFalse()

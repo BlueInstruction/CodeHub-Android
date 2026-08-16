@@ -364,14 +364,14 @@ private class TestWrapperAssets : WrapperAssets {
     override fun gradlewBatScript(): ByteArray = REAL_GRADLEW_BAT.toByteArray()
     override fun gradleWrapperJar(): ByteArray = FAKE_JAR_BYTES
 
-    private val REAL_GRADLEW = "Content with GradleWrapperMain and APP_HOME and CLASSPATH"
+    private val REAL_GRADLEW = buildString {
+        appendLine("#!/bin/sh")
+        appendLine("# Gradle wrapper script")
+        appendLine("APP_HOME=\\$PWD")
+        appendLine("CLASSPATH=\\$APP_HOME/gradle/wrapper/gradle-wrapper.jar")
+        appendLine("exec java -classpath \"\\$CLASSPATH\" org.gradle.wrapper.GradleWrapperMain \"\\$@\"")
+        repeat(50) { appendLine("# padding line $it to exceed 1000 chars for the test") }
+    }
     private val REAL_GRADLEW_BAT = "@rem Gradle startup script for Windows\r\n"
-    private val FAKE_JAR_BYTES = byteArrayOf(
-        0x50, 0x4b, 0x03, 0x04,
-        0x14, 0x00, 0x08, 0x00,
-        0x08, 0x00, 0x00, 0x00.toByte(),
-        0x21, 0x00, 0x00, 0x00.toByte(),
-        0x00, 0x00, 0x00, 0x00.toByte(),
-        0x00, 0x00, 0x00, 0x00.toByte()
-    )
+    private val FAKE_JAR_BYTES = ByteArray(2000) { 0 }
 }
