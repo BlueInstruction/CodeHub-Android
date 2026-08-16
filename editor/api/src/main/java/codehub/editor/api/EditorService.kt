@@ -28,5 +28,5 @@ interface EditorService {
     val events: Flow<EditorEvent>
     suspend fun start(backend: EditorBackend): EditorEndpoint
     suspend fun stop()
-    suspend fun restart(): EditorEndpoint?
+    suspend fun restart()
 }
