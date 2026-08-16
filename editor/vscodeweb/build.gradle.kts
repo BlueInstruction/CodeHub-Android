@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.editor.vscodeweb"
+    namespace = "codehub.editor.vscodeweb"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.diagnostics.** { *; }
+-keep class codehub.diagnostics.** { *; }

@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.devtools.vulkan.** { *; }
+-keep class codehub.devtools.vulkan.** { *; }

@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.devtools.logcat"
+    namespace = "codehub.devtools.logcat"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

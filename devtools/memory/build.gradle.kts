@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.devtools.memory"
+    namespace = "codehub.devtools.memory"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

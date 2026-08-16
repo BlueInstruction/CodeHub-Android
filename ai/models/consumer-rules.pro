@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.ai.models.** { *; }
+-keep class codehub.ai.models.** { *; }

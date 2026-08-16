@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.integrations.opengui.** { *; }
+-keep class codehub.integrations.opengui.** { *; }

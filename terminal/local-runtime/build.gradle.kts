@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.terminal.local_runtime"
+    namespace = "codehub.terminal.local_runtime"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

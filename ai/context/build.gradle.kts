@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.ai.context"
+    namespace = "codehub.ai.context"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.core.permissions"
+    namespace = "codehub.core.permissions"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

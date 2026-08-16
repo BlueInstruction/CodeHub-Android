@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.integrations.acs.** { *; }
+-keep class codehub.integrations.acs.** { *; }

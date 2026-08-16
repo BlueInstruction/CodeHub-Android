@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.integrations.openclaw.** { *; }
+-keep class codehub.integrations.openclaw.** { *; }

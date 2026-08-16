@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.terminal.ssh"
+    namespace = "codehub.terminal.ssh"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

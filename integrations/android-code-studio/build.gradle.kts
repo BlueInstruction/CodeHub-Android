@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.integrations.acs"
+    namespace = "codehub.integrations.acs"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

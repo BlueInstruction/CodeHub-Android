@@ -18,7 +18,7 @@ CodeHub is built with Gradle 8.10+ and AGP 8.7+.
 The debug APK installs with the `.debug` applicationId suffix:
 
 ```
-io.github.blueinstruction.codehub.debug
+codehub.debug
 ```
 
 ## Running tests

@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.devtools.device.** { *; }
+-keep class codehub.devtools.device.** { *; }

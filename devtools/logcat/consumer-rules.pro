@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.devtools.logcat.** { *; }
+-keep class codehub.devtools.logcat.** { *; }

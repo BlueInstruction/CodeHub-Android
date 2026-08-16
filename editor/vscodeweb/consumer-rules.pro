@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.editor.vscodeweb.** { *; }
+-keep class codehub.editor.vscodeweb.** { *; }

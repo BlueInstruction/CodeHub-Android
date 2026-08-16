@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.ai.models"
+    namespace = "codehub.ai.models"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

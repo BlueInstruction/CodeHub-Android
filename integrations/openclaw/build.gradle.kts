@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.integrations.openclaw"
+    namespace = "codehub.integrations.openclaw"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

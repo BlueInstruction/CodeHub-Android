@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.integrations.pocketpal.** { *; }
+-keep class codehub.integrations.pocketpal.** { *; }

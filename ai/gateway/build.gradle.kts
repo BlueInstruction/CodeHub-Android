@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.ai.gateway"
+    namespace = "codehub.ai.gateway"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

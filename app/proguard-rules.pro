@@ -1,2 +1,2 @@
--keep class io.github.blueinstruction.codehub.** { *; }
+-keep class codehub.** { *; }
 -dontwarn org.jetbrains.annotations.**

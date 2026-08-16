@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.core.workspace"
+    namespace = "codehub.core.workspace"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

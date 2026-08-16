@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.devtools.vulkan"
+    namespace = "codehub.devtools.vulkan"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

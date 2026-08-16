@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.ai.agents"
+    namespace = "codehub.ai.agents"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

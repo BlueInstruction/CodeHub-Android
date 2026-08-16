@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.git.core.** { *; }
+-keep class codehub.git.core.** { *; }

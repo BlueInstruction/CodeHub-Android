@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.terminal.local.** { *; }
+-keep class codehub.terminal.local.** { *; }

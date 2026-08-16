@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.editor.codeserver"
+    namespace = "codehub.editor.codeserver"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

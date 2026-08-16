@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.core.diagnostics"
+    namespace = "codehub.core.diagnostics"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

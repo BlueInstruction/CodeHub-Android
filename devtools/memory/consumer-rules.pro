@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.devtools.memory.** { *; }
+-keep class codehub.devtools.memory.** { *; }

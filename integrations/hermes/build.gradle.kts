@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.integrations.hermes"
+    namespace = "codehub.integrations.hermes"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

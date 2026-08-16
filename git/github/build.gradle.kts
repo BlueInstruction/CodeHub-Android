@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.git.github"
+    namespace = "codehub.git.github"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

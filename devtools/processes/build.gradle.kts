@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.devtools.processes"
+    namespace = "codehub.devtools.processes"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

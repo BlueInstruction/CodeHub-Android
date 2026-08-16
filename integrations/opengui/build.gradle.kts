@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.integrations.opengui"
+    namespace = "codehub.integrations.opengui"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {

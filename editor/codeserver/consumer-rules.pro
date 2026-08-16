@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.editor.codeserver.** { *; }
+-keep class codehub.editor.codeserver.** { *; }

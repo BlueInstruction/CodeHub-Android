@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.terminal.termux.** { *; }
+-keep class codehub.terminal.termux.** { *; }

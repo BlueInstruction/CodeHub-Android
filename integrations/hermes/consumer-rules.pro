@@ -1,1 +1,1 @@
--keep class io.github.blueinstruction.codehub.integrations.hermes.** { *; }
+-keep class codehub.integrations.hermes.** { *; }

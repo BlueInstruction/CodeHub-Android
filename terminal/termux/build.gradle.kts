@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.blueinstruction.codehub.terminal.termux"
+    namespace = "codehub.terminal.termux"
     compileSdk = 35
     defaultConfig { minSdk = 29 }
     compileOptions {
