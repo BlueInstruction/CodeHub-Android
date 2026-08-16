@@ -27,4 +27,13 @@ object ToolchainModule {
         sink: codehub.core.diagnostics.DiagnosticSink,
         manager: ToolchainManager
     ): ToolchainInstaller = ToolchainInstaller(runner, sink, ctx, manager)
+
+    @Provides
+    @Singleton
+    fun provideDebugKeystoreGenerator(
+        runner: codehub.core.process.ProcessRunner,
+        sink: codehub.core.diagnostics.DiagnosticSink,
+        manager: ToolchainManager
+    ): codehub.build.signing.DebugKeystoreGenerator =
+        codehub.build.signing.DebugKeystoreGenerator(runner, sink, manager)
 }

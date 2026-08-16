@@ -12,7 +12,6 @@ import codehub.core.process.ProcessSpec
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.io.path.Path
 
 @Singleton
 class GradleBuildProvider @Inject constructor(
@@ -31,15 +30,21 @@ class GradleBuildProvider @Inject constructor(
 
     override suspend fun execute(target: BuildTarget): BuildResult {
         val started = System.currentTimeMillis()
-        val isWrapper = File(target.workspacePath, "gradlew").exists()
-        val command = if (isWrapper) {
-            listOf(wrapperScript) + target.tasks + listOf("--parallel", "--console=plain")
-        } else {
-            listOf("gradle") + target.tasks + listOf("--console=plain")
+        val workspacePath = target.workspacePath
+        val isAgpProject = AgpTaskSemantics.isAgpProject(workspacePath)
+        val isWrapper = File(workspacePath, "gradlew").exists()
+        val gradleBin = if (isWrapper) wrapperScript else "gradle"
+
+        val command = buildList {
+            add(gradleBin)
+            addAll(target.tasks.map { normalizeTaskName(it, isAgpProject) })
+            add("--parallel")
+            add("--console=plain")
         }
+
         val spec = ProcessSpec(
             command = command,
-            workingDirectory = target.workspacePath,
+            workingDirectory = workspacePath,
             environment = target.environmentOverrides + mapOf(
                 "JAVA_OPTS" to "-Xmx2g",
                 "GRADLE_OPTS" to "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true"
@@ -48,9 +53,18 @@ class GradleBuildProvider @Inject constructor(
             redirectStderrToStdout = false
         )
         val result = processRunner.run(spec)
-        val diagnostics = parseDiagnostics(result.stdout, result.stderr)
-        val artifacts = findArtifacts(target.workspacePath)
+        val diagnostics = if (isAgpProject) {
+            AgpDiagnosticParser.parse(result.stdout, result.stderr)
+        } else {
+            parseDiagnostics(result.stdout, result.stderr)
+        }
+        val artifacts = if (isAgpProject) {
+            locateAgpArtifacts(workspacePath, target.tasks)
+        } else {
+            findGenericArtifacts(workspacePath)
+        }
         val status = if (result.exitCode == 0) BuildStatus.Succeeded else BuildStatus.Failed
+
         return BuildResult(
             target = target,
             status = status,
@@ -89,7 +103,36 @@ class GradleBuildProvider @Inject constructor(
         }.toList()
     }
 
-    private fun findArtifacts(workspacePath: String): List<BuildArtifact> {
+    private fun normalizeTaskName(task: String, isAgpProject: Boolean): String {
+        if (!isAgpProject) return task
+        val known = AgpTaskSemantics.describe(task)
+        return if (known.kind == AgpTaskKind.GenericGradle) {
+            if (task.startsWith(":")) task else ":app:$task"
+        } else {
+            ":app:${known.taskName}"
+        }
+    }
+
+    private fun locateAgpArtifacts(workspacePath: String, tasks: List<String>): List<BuildArtifact> {
+        val descriptors = AgpTaskSemantics.describeAll(tasks)
+        val hasBundleTask = descriptors.any { it.kind == AgpTaskKind.BundleDebug || it.kind == AgpTaskKind.BundleRelease }
+        val hasLintTask = descriptors.any { it.kind == AgpTaskKind.LintDebug || it.kind == AgpTaskKind.LintRelease }
+        val hasAssembleOrInstallTask = descriptors.any {
+            it.kind == AgpTaskKind.AssembleDebug ||
+            it.kind == AgpTaskKind.AssembleRelease ||
+            it.kind == AgpTaskKind.InstallDebug ||
+            it.kind == AgpTaskKind.InstallRelease
+        }
+
+        val artifacts = mutableListOf<BuildArtifact>()
+        if (hasAssembleOrInstallTask) artifacts += AndroidArtifactLocator.findApks(workspacePath)
+        if (hasBundleTask) artifacts += AndroidArtifactLocator.findAabs(workspacePath)
+        if (hasLintTask) artifacts += AndroidArtifactLocator.findLintReports(workspacePath)
+        if (artifacts.isEmpty()) artifacts += AndroidArtifactLocator.findAll(workspacePath)
+        return artifacts.distinctBy { it.path }
+    }
+
+    private fun findGenericArtifacts(workspacePath: String): List<BuildArtifact> {
         val outputs = listOf(
             "build/outputs/apk",
             "build/outputs/aar",
@@ -103,6 +146,6 @@ class GradleBuildProvider @Inject constructor(
             else f.walkTopDown().filter { it.isFile }.map {
                 BuildArtifact(path = it.absolutePath, sizeBytes = it.length())
             }.toList()
-        }
+        }.distinctBy { it.path }
     }
 }
