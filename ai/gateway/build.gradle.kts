@@ -26,7 +26,6 @@ dependencies {
     implementation(project(":core:permissions"))
     implementation(project(":ai:tools"))
     implementation(project(":ai:context"))
-    implementation(project(":ai:agents"))
     implementation(project(":ai:models"))
     implementation(project(":ai:permissions"))
     implementation(libs.kotlinx.coroutines.android)
