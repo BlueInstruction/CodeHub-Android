@@ -328,6 +328,38 @@ class ProjectGeneratorTest {
         assertThat(content.length).isGreaterThan(1000)
         assertThat(gradlew.canExecute()).isTrue()
     }
+
+    @Test
+    fun `gradle-wrapper version is compatible with AGP version for all templates`() {
+        ProjectTemplateRegistry.templates.forEach { template ->
+            val (requiredGradle, _, _) = codehub.build.toolchain.ToolchainCompatibility
+                .agpGradleJdkMatrix(template.agpVersion)
+            val compatible = codehub.build.toolchain.ToolchainCompatibility
+                .isCompatible(codehub.build.toolchain.ToolchainComponent.Gradle, template.gradleVersion)
+            assertThat(compatible)
+                .withFailureMessage(
+                    "Template ${template.kind} has Gradle ${template.gradleVersion} but AGP ${template.agpVersion} " +
+                        "requires Gradle $requiredGradle+"
+                )
+                .isTrue()
+        }
+    }
+
+    @Test
+    fun `gradle-wrapper properties contains the template Gradle version`() = runTest {
+        val projectDir = tmp.newFolder("wrapper-version")
+        val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
+        generator.generate(
+            ProjectGenerationRequest(
+                template = template,
+                projectPath = projectDir.absolutePath,
+                packageName = "com.test.app",
+                displayName = "Test"
+            )
+        )
+        val props = File(projectDir, "gradle/wrapper/gradle-wrapper.properties").readText()
+        assertThat(props).contains("gradle-${template.gradleVersion}-bin.zip")
+    }
 }
 
 private class TestWrapperAssets : WrapperAssets {

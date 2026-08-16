@@ -61,7 +61,7 @@ class ToolchainInstaller @Inject constructor(
         return ok
     }
 
-    suspend fun provisionAndroidSdk(): Boolean {
+    suspend fun provisionAndroidSdk(neededComponents: List<String> = emptyList()): Boolean {
         val codehubSdk = File(context.filesDir, "android-sdk")
         codehubSdk.mkdirs()
         val cmdlineToolsDir = File(codehubSdk, "cmdline-tools/latest")
@@ -83,20 +83,49 @@ class ToolchainInstaller @Inject constructor(
             if (!downloaded) return false
         }
 
-        val packages = listOf(
+        val allPackages = listOf(
             "platform-tools",
             "build-tools;35.0.0",
             "platforms;android-35",
             "platforms;android-34",
             "ndk;27.0.12077973"
         )
+
+        val packagesToInstall = if (neededComponents.isEmpty()) {
+            allPackages
+        } else {
+            allPackages.filter { pkg ->
+                neededComponents.any { needed ->
+                    pkg.startsWith(needed, ignoreCase = true) ||
+                        needed.equals("AndroidSdk", ignoreCase = true) ||
+                        (needed.equals("PlatformTools", ignoreCase = true) && pkg == "platform-tools") ||
+                        (needed.equals("BuildTools", ignoreCase = true) && pkg.startsWith("build-tools")) ||
+                        (needed.equals("PlatformSdk", ignoreCase = true) && pkg.startsWith("platforms;")) ||
+                        (needed.equals("Ndk", ignoreCase = true) && pkg.startsWith("ndk;"))
+                }
+            }
+        }
+
         val env = mapOf(
             "ANDROID_HOME" to codehubSdk.absolutePath,
             "ANDROID_SDK_ROOT" to codehubSdk.absolutePath,
             "HOME" to termuxHome,
             "PATH" to "$termuxPrefix/bin:/system/bin"
         )
-        for (pkg in packages) {
+        var allOk = true
+        for (pkg in packagesToInstall) {
+            if (isSdkPackageInstalled(codehubSdk, pkg)) {
+                diagnostics.emit(
+                    DiagnosticEvent.now(
+                        kind = DiagnosticEventKind.RuntimeInitialization,
+                        severity = DiagnosticSeverity.Info,
+                        status = DiagnosticStatus.Ok,
+                        source = "ToolchainInstaller",
+                        message = "SDK package already installed: $pkg (skipping)"
+                    )
+                )
+                continue
+            }
             val spec = ProcessSpec(
                 command = listOf("$cmdlineToolsDir/bin/sdkmanager", "--licenses", pkg),
                 workingDirectory = codehubSdk.absolutePath,
@@ -105,6 +134,7 @@ class ToolchainInstaller @Inject constructor(
             )
             val result = processRunner.run(spec)
             if (result.exitCode != 0) {
+                allOk = false
                 diagnostics.emit(
                     DiagnosticEvent.now(
                         kind = DiagnosticEventKind.RuntimeInitialization,
@@ -126,7 +156,19 @@ class ToolchainInstaller @Inject constructor(
                 message = "Android SDK provisioned at ${codehubSdk.absolutePath}"
             )
         )
-        return true
+        return allOk
+    }
+
+    private fun isSdkPackageInstalled(sdkRoot: File, packageName: String): Boolean {
+        val relativePath = when {
+            packageName == "platform-tools" -> "platform-tools"
+            packageName.startsWith("build-tools;") -> "build-tools/${packageName.substringAfter(";")}"
+            packageName.startsWith("platforms;") -> "platforms/${packageName.substringAfter(";")}"
+            packageName.startsWith("ndk;") -> "ndk/${packageName.substringAfter(";")}"
+            else -> return false
+        }
+        val dir = File(sdkRoot, relativePath)
+        return dir.isDirectory && (dir.listFiles()?.isNotEmpty() == true)
     }
 
     private suspend fun downloadCmdlineTools(targetDir: File): Boolean {
@@ -258,9 +300,14 @@ class ToolchainInstaller @Inject constructor(
             installTermuxPackages(missingTermux)
         }
         if (needSdk.isNotEmpty()) {
-            provisionAndroidSdk()
+            provisionAndroidSdk(needSdk)
         }
 
         return toolchainManager.probe()
+    }
+
+    suspend fun ensureReady(): ToolchainReadiness {
+        val readiness = toolchainManager.probe()
+        return ensureReady(readiness)
     }
 }

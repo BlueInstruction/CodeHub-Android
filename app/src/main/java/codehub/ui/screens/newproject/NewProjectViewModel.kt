@@ -29,13 +29,15 @@ data class NewProjectUiState(
     val skipInstall: Boolean = false,
     val packageNameError: String? = null,
     val displayNameError: String? = null,
+    val pathWarning: String? = null,
     val canSubmit: Boolean = false
 )
 
 @HiltViewModel
 class NewProjectViewModel @Inject constructor(
     private val pipeline: AndroidProjectBuildPipeline,
-    private val failureAnalysis: BuildFailureAnalysis
+    private val failureAnalysis: BuildFailureAnalysis,
+    private val locationResolver: codehub.core.workspace.WorkspaceLocationResolver
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NewProjectUiState())
@@ -97,7 +99,27 @@ class NewProjectViewModel @Inject constructor(
     }
 
     fun updateProjectPath(value: String) {
-        _uiState.value = _uiState.value.copy(projectPath = value)
+        val resolved = locationResolver.resolvePath(value)
+        _uiState.value = _uiState.value.copy(
+            projectPath = value,
+            pathWarning = if (resolved.issues.isNotEmpty()) resolved.issues.joinToString("; ") else null
+        )
+        validate()
+    }
+
+    fun resolveFolderUri(uri: android.net.Uri) {
+        val resolved = locationResolver.resolve(uri)
+        val path = resolved.filesystemPath ?: resolved.termuxPath
+        if (path != null && resolved.usable) {
+            _uiState.value = _uiState.value.copy(
+                projectPath = path,
+                pathWarning = if (resolved.issues.isNotEmpty()) resolved.issues.joinToString("; ") else null
+            )
+        } else {
+            _uiState.value = _uiState.value.copy(
+                pathWarning = "Selected folder is not accessible to Termux/Gradle: ${resolved.issues.joinToString("; ")}"
+            )
+        }
         validate()
     }
 

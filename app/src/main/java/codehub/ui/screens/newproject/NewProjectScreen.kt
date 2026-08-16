@@ -132,10 +132,7 @@ private fun ProjectDetailsForm(
         contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
         if (uri != null) {
-            val path = uriToPath(uri)
-            if (path != null) {
-                viewModel.updateProjectPath(path)
-            }
+            viewModel.resolveFolderUri(uri)
         }
     }
 
@@ -191,34 +188,20 @@ private fun ProjectDetailsForm(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        }
-    }
-}
-
-private fun uriToPath(uri: android.net.Uri): String? {
-    val path = uri.path ?: return null
-    return when {
-        path.startsWith("/tree/") -> {
-            val after = path.removePrefix("/tree/")
-            val decoded = android.net.Uri.decode(after).replace(":", "/")
-            if (decoded.startsWith("primary/")) {
-                "/storage/emulated/0/${decoded.removePrefix("primary/")}"
-            } else if (decoded.startsWith("/")) {
-                decoded
-            } else {
-                "/storage/$decoded"
+            state.pathWarning?.let { warning ->
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(6.dp))
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = warning,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
             }
         }
-        path.startsWith("/document/") -> {
-            val after = path.removePrefix("/document/")
-            val decoded = android.net.Uri.decode(after).replace(":", "/")
-            if (decoded.startsWith("primary/")) {
-                "/storage/emulated/0/${decoded.removePrefix("primary/")}"
-            } else {
-                decoded
-            }
-        }
-        else -> null
     }
 }
 
