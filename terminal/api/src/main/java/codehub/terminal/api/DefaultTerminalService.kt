@@ -1,6 +1,5 @@
 package codehub.terminal.api
 
-import codehub.core.services.AbstractManagedService
 import codehub.core.diagnostics.DiagnosticSink
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow

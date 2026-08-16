@@ -23,7 +23,6 @@ android {
 
 dependencies {
     implementation(project(":core:diagnostics"))
-    implementation(project(":core:services"))
     implementation(project(":core:permissions"))
     implementation(project(":ai:tools"))
     implementation(project(":ai:context"))
