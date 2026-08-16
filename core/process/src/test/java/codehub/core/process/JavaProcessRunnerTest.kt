@@ -1,5 +1,4 @@
 package codehub.core.process
-import org.junit.Ignore
 
 import com.google.common.truth.Truth.assertThat
 import codehub.core.diagnostics.InMemoryDiagnosticSink
