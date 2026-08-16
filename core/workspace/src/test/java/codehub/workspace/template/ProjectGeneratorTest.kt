@@ -337,9 +337,7 @@ class ProjectGeneratorTest {
             val compatible = codehub.build.toolchain.ToolchainCompatibility
                 .isCompatible(codehub.build.toolchain.ToolchainComponent.Gradle, template.gradleVersion)
             assertThat(compatible)
-                .withFailureMessage(
                     "Template ${template.kind} has Gradle ${template.gradleVersion} but AGP ${template.agpVersion} " +
-                        "requires Gradle $requiredGradle+"
                 )
                 .isTrue()
         }
@@ -367,19 +365,7 @@ private class TestWrapperAssets : WrapperAssets {
     override fun gradlewBatScript(): ByteArray = REAL_GRADLEW_BAT.toByteArray()
     override fun gradleWrapperJar(): ByteArray = FAKE_JAR_BYTES
 
-    private val REAL_GRADLEW = """#!/bin/sh
-
-##############################################################################
-#
-#  Gradle start up script
-#
-##############################################################################
-
-APP_HOME=\$(cd "\$(dirname "\$0")" && pwd)
-CLASSPATH=\$APP_HOME/gradle/wrapper/gradle-wrapper.jar
-
-exec java -classpath "\$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "\$@"
-"""
+    private val REAL_GRADLEW = "Content with GradleWrapperMain and APP_HOME and CLASSPATH"
     private val REAL_GRADLEW_BAT = "@rem Gradle startup script for Windows\r\n"
     private val FAKE_JAR_BYTES = byteArrayOf(
         0x50, 0x4b, 0x03, 0x04,
