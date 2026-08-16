@@ -9,7 +9,7 @@ object AgpDiagnosticParser {
     )
 
     private val agpFailurePattern = Regex(
-        """AGPBI:\s*\{.*?"kind":"(?<kind>error|warning|info|fatal)".*?"text":"(?<text>[^"]+)".*?"file":\s*\[(?:"(?<file>[^"]+)")?.*?"line":\s*(?<line>\d+)?[^}]*\}"""
+        """AGPBI:\s*\{.*?"kind":"(?<kind>error|warning|info|fatal)".*?"text":"(?<text>[^"]+)".*?\}"""
     )
 
     private val manifestMergePattern = Regex(
@@ -67,14 +67,12 @@ object AgpDiagnosticParser {
             val groups = match.groups
             val severity = groups["kind"]?.value?.lowercase() ?: "info"
             val text = groups["text"]?.value?.trim() ?: ""
-            val file = groups["file"]?.value
-            val line = groups["line"]?.value?.toIntOrNull()
             if (text.isNotBlank()) {
                 results.add(
                     BuildDiagnostic(
                         severity = severity,
-                        file = file,
-                        line = line,
+                        file = null,
+                        line = null,
                         column = null,
                         code = null,
                         message = text,
