@@ -73,10 +73,10 @@ class IterationBudgetTest {
 
     @Test
     fun `resetSubagentOnly keeps parent`() = runTest {
-        val budget = IterationBudget(parent = 100, perSubagent = 10)
+        val budget = IterationBudget(parent = 100, perSubagent = 30)
         budget.consume(20, isSubagent = true)
         budget.resetSubagentOnly()
-        assertThat(budget.parentUsedCount).isAtLeast(20L)
+        assertThat(budget.parentUsedCount).isEqualTo(20L)
         assertThat(budget.subagentUsedCount).isEqualTo(0)
     }
 
