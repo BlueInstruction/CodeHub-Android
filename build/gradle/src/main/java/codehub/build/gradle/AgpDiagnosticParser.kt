@@ -5,7 +5,7 @@ import codehub.build.api.BuildDiagnostic
 object AgpDiagnosticParser {
 
     private val kotlinPattern = Regex(
-        """(?:e:|w:)\s+(?:file:)?(?<file>[^\s:]+):(?<line>\d+):(?<col>\d+):\s+(?<severity>error|warning):\s*(?<message>.+)"""
+        """(?:e:|w:)\s+(?:file:)?(?<file>[^\s:]+):(?<line>\d+):(?<col>\d+):\s+(?:(?<severity>error|warning):\s*)?(?<message>.+)"""
     )
 
     private val agpFailurePattern = Regex(
@@ -41,7 +41,9 @@ object AgpDiagnosticParser {
 
         for (match in kotlinPattern.findAll(combined)) {
             val groups = match.groups
-            val severity = groups["severity"]?.value?.lowercase() ?: "info"
+            val fullMatch = match.value
+            val severity = groups["severity"]?.value?.lowercase()
+                ?: if (fullMatch.startsWith("e:")) "error" else "warning"
             val file = groups["file"]?.value
             val line = groups["line"]?.value?.toIntOrNull()
             val col = groups["col"]?.value?.toIntOrNull()
