@@ -12,7 +12,6 @@ class DefaultServiceManagerTest {
     private val sink = InMemoryDiagnosticSink()
 
     @Ignore
-    @Ignore
     @Test
     fun `startAll starts registered services and emits diagnostics`() = runTest {
         val manager = DefaultServiceManager(sink)
@@ -28,7 +27,6 @@ class DefaultServiceManagerTest {
     }
 
     @Ignore
-    @Ignore
     @Test
     fun `stopAll stops registered services in reverse`() = runTest {
         val manager = DefaultServiceManager(sink)
@@ -42,7 +40,6 @@ class DefaultServiceManagerTest {
         assertThat(b.stopped).isTrue()
     }
 
-    @Ignore
     @Ignore
     @Test
     fun `restart triggers stop then start`() = runTest {
