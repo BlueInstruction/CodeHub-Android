@@ -132,8 +132,7 @@ class ApkInstaller @Inject constructor(
     }
 
     suspend fun launch(packageName: String): Boolean {
-        val intent = packageInspector.launch(packageName)
-        return intent
+        return runCatching { packageInspector.launch(packageName) }.isSuccess
     }
 
     suspend fun discoverApks(workspacePath: String): List<ApkDescriptor> {
