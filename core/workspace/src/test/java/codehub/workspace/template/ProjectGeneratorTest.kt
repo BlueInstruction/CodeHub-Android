@@ -336,10 +336,9 @@ class ProjectGeneratorTest {
                 .agpGradleJdkMatrix(template.agpVersion)
             val compatible = codehub.build.toolchain.ToolchainCompatibility
                 .isCompatible(codehub.build.toolchain.ToolchainComponent.Gradle, template.gradleVersion)
-            assertThat(compatible)
-                    "Template ${template.kind} has Gradle ${template.gradleVersion} but AGP ${template.agpVersion} " +
-                )
-                .isTrue()
+            if (!compatible) {
+                throw AssertionError("Template ${template.kind} has Gradle ${template.gradleVersion} but AGP ${template.agpVersion} requires Gradle $requiredGradle+")
+            }
         }
     }
 
