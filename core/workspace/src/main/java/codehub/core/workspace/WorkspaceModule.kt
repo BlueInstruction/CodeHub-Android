@@ -28,5 +28,22 @@ abstract class WorkspaceModule {
         fun provideWorkspaceLocationResolver(
             @ApplicationContext ctx: android.content.Context
         ): WorkspaceLocationResolver = WorkspaceLocationResolver(ctx)
+
+        @Provides
+        @Singleton
+        fun provideWorkspaceDatabase(
+            @ApplicationContext ctx: android.content.Context
+        ): codehub.core.workspace.db.WorkspaceDatabase =
+            androidx.room.Room.databaseBuilder(
+                ctx,
+                codehub.core.workspace.db.WorkspaceDatabase::class.java,
+                "codehub-workspace.db"
+            ).fallbackToDestructiveMigration().build()
+
+        @Provides
+        @Singleton
+        fun provideProjectDao(
+            db: codehub.core.workspace.db.WorkspaceDatabase
+        ): codehub.core.workspace.db.ProjectDao = db.projectDao()
     }
 }
