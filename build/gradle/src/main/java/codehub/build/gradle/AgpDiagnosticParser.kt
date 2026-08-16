@@ -5,7 +5,7 @@ import codehub.build.api.BuildDiagnostic
 object AgpDiagnosticParser {
 
     private val kotlinPattern = Regex(
-        """(?<file>[^\s:]+):(?<line>\d+):(?<col>\d+):\s+(?<severity>error|warning):\s*(?<message>.+)"""
+        """(?:e:|w:)\s+(?:file:)?(?<file>[^\s:]+):(?<line>\d+):(?<col>\d+):\s+(?<severity>error|warning):\s*(?<message>.+)"""
     )
 
     private val agpFailurePattern = Regex(
