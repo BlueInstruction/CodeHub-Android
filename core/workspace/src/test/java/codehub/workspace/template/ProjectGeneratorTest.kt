@@ -13,7 +13,8 @@ class ProjectGeneratorTest {
     @get:Rule val tmp = TemporaryFolder()
 
     private val sink = InMemoryDiagnosticSink()
-    private val generator = ProjectGenerator(sink)
+    private val wrapperAssets = TestWrapperAssets()
+    private val generator = ProjectGenerator(sink, wrapperAssets)
 
     @Test
     fun `EmptyCompose template generates full project tree`() = runTest {
@@ -284,4 +285,76 @@ class ProjectGeneratorTest {
         assertThat(readme).contains("Empty Compose Activity")
         assertThat(readme).contains("assembleDebug")
     }
+
+    @Test
+    fun `gradle-wrapper jar is binary and non-trivial`() = runTest {
+        val projectDir = tmp.newFolder("wrapper-jar")
+        val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
+        generator.generate(
+            ProjectGenerationRequest(
+                template = template,
+                projectPath = projectDir.absolutePath,
+                packageName = "com.test.app",
+                displayName = "Test"
+            )
+        )
+        val jar = File(projectDir, "gradle/wrapper/gradle-wrapper.jar")
+        assertThat(jar.exists()).isTrue()
+        assertThat(jar.length()).isGreaterThan(1000L)
+        val header = jar.readBytes().copyOfRange(0, 4)
+        assertThat(header[0]).isEqualTo(0x50.toByte()) // 'P'
+        assertThat(header[1]).isEqualTo(0x4b.toByte()) // 'K'
+        assertThat(header[2]).isEqualTo(0x03.toByte()) // 0x03
+        assertThat(header[3]).isEqualTo(0x04.toByte()) // 0x04
+    }
+
+    @Test
+    fun `gradlew is the real Gradle wrapper script`() = runTest {
+        val projectDir = tmp.newFolder("real-gradlew")
+        val template = ProjectTemplateRegistry.get(ProjectTemplateKind.EmptyCompose)
+        generator.generate(
+            ProjectGenerationRequest(
+                template = template,
+                projectPath = projectDir.absolutePath,
+                packageName = "com.test.app",
+                displayName = "Test"
+            )
+        )
+        val gradlew = File(projectDir, "gradlew")
+        assertThat(gradlew.exists()).isTrue()
+        val content = gradlew.readText()
+        assertThat(content).contains("GradleWrapperMain")
+        assertThat(content).contains("APP_HOME")
+        assertThat(content.length).isGreaterThan(1000)
+        assertThat(gradlew.canExecute()).isTrue()
+    }
+}
+
+private class TestWrapperAssets : WrapperAssets {
+    override fun gradlewScript(): ByteArray = REAL_GRADLEW.toByteArray()
+    override fun gradlewBatScript(): ByteArray = REAL_GRADLEW_BAT.toByteArray()
+    override fun gradleWrapperJar(): ByteArray = FAKE_JAR_BYTES
+
+    private val REAL_GRADLEW = """#!/bin/sh
+
+##############################################################################
+#
+#  Gradle start up script
+#
+##############################################################################
+
+APP_HOME=\$(cd "\$(dirname "\$0")" && pwd)
+CLASSPATH=\$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+
+exec java -classpath "\$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "\$@"
+"""
+    private val REAL_GRADLEW_BAT = "@rem Gradle startup script for Windows\r\n"
+    private val FAKE_JAR_BYTES = byteArrayOf(
+        0x50, 0x4b, 0x03, 0x04,
+        0x14, 0x00, 0x08, 0x00,
+        0x08, 0x00, 0x00, 0x00.toByte(),
+        0x21, 0x00, 0x00, 0x00.toByte(),
+        0x00, 0x00, 0x00, 0x00.toByte(),
+        0x00, 0x00, 0x00, 0x00.toByte()
+    )
 }

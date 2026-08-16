@@ -11,7 +11,8 @@ import javax.inject.Singleton
 
 @Singleton
 class ProjectGenerator @Inject constructor(
-    private val diagnostics: DiagnosticSink
+    private val diagnostics: DiagnosticSink,
+    private val wrapperAssets: WrapperAssets
 ) {
 
     suspend fun generate(request: ProjectGenerationRequest): ProjectGenerationResult {
@@ -42,6 +43,7 @@ class ProjectGenerator @Inject constructor(
             filesWritten += writeSettingsGradle(projectDir, request.displayName, request.packageName)
             filesWritten += writeVersionCatalog(projectDir, request.template)
             filesWritten += writeGradleWrapper(projectDir, request.template.gradleVersion)
+            filesWritten += writeGradleWrapperJar(projectDir)
             filesWritten += writeGradleWrapperScript(projectDir)
             filesWritten += writeGradlewBat(projectDir)
             filesWritten += writeGradleProperties(projectDir)
@@ -215,16 +217,24 @@ zipStorePath=wrapper/dists
         return file.absolutePath
     }
 
+    private fun writeGradleWrapperJar(projectDir: File): String {
+        val wrapperDir = File(projectDir, "gradle/wrapper")
+        wrapperDir.mkdirs()
+        val file = File(wrapperDir, "gradle-wrapper.jar")
+        file.writeBytes(wrapperAssets.gradleWrapperJar())
+        return file.absolutePath
+    }
+
     private fun writeGradleWrapperScript(projectDir: File): String {
         val file = File(projectDir, "gradlew")
-        file.writeText(GRADLEW_SCRIPT)
+        file.writeBytes(wrapperAssets.gradlewScript())
         file.setExecutable(true)
         return file.absolutePath
     }
 
     private fun writeGradlewBat(projectDir: File): String {
         val file = File(projectDir, "gradlew.bat")
-        file.writeText("@rem Gradle startup script for Windows\nexit /b 0\n")
+        file.writeBytes(wrapperAssets.gradlewBatScript())
         return file.absolutePath
     }
 
@@ -715,15 +725,5 @@ pm install app/build/outputs/apk/debug/app-debug.apk
 """
         )
         return file.absolutePath
-    }
-
-    companion object {
-        private const val GRADLEW_SCRIPT = """#!/usr/bin/env sh
-# Gradle startup script
-DIRNAME=$(dirname "$0")
-APP_HOME=$(cd "$DIRNAME" && pwd)
-CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
-exec java -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
-"""
     }
 }

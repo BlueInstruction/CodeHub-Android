@@ -2,6 +2,9 @@ package codehub.ui.screens.newproject
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import codehub.ai.agents.AnalysisResult
+import codehub.ai.agents.BuildFailureAnalysis
+import codehub.ai.agents.FailureType
 import codehub.core.services.android.AndroidPipelineEvent
 import codehub.core.services.android.AndroidPipelineRequest
 import codehub.core.services.android.AndroidPipelineState
@@ -31,7 +34,8 @@ data class NewProjectUiState(
 
 @HiltViewModel
 class NewProjectViewModel @Inject constructor(
-    private val pipeline: AndroidProjectBuildPipeline
+    private val pipeline: AndroidProjectBuildPipeline,
+    private val failureAnalysis: BuildFailureAnalysis
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NewProjectUiState())
@@ -42,6 +46,12 @@ class NewProjectViewModel @Inject constructor(
 
     private val _logEntries = MutableStateFlow<List<AndroidPipelineEvent.LogEntry>>(emptyList())
     val logEntries: StateFlow<List<AndroidPipelineEvent.LogEntry>> = _logEntries.asStateFlow()
+
+    private val _analysis = MutableStateFlow<AnalysisResult?>(null)
+    val analysis: StateFlow<AnalysisResult?> = _analysis.asStateFlow()
+
+    private val _analyzing = MutableStateFlow(false)
+    val analyzing: StateFlow<Boolean> = _analyzing.asStateFlow()
 
     val pipelineState: StateFlow<AndroidPipelineState> = pipeline.state
 
@@ -58,6 +68,9 @@ class NewProjectViewModel @Inject constructor(
         viewModelScope.launch {
             pipeline.events.collect { event ->
                 _events.value = (_events.value + event).takeLast(100)
+                if (event is AndroidPipelineEvent.AiAnalysisTriggered) {
+                    triggerAnalysis(event)
+                }
             }
         }
         viewModelScope.launch {
@@ -106,6 +119,8 @@ class NewProjectViewModel @Inject constructor(
         if (!state.canSubmit) return
         _events.value = emptyList()
         _logEntries.value = emptyList()
+        _analysis.value = null
+        _analyzing.value = false
         pipeline.execute(
             AndroidPipelineRequest(
                 projectPath = state.projectPath,
@@ -117,6 +132,33 @@ class NewProjectViewModel @Inject constructor(
                 skipInstall = state.skipInstall
             )
         )
+    }
+
+    private fun triggerAnalysis(event: AndroidPipelineEvent.AiAnalysisTriggered) {
+        viewModelScope.launch {
+            _analyzing.value = true
+            val type = when (event.failureType) {
+                "BuildConfigure" -> FailureType.BuildConfigure
+                "BuildCompile" -> FailureType.BuildCompile
+                "ApkInstall" -> FailureType.ApkInstall
+                "AppLaunch" -> FailureType.AppLaunch
+                "LogcatCrash" -> FailureType.LogcatCrash
+                "Sync" -> FailureType.Sync
+                else -> FailureType.BuildCompile
+            }
+            val result = runCatching {
+                failureAnalysis.analyze(
+                    workspacePath = event.workspacePath,
+                    providerId = "offline",
+                    failingContext = event.stderr,
+                    failureType = type,
+                    packageName = event.packageName
+                )
+            }
+            result.onSuccess { _analysis.value = it }
+                .onFailure { _analysis.value = null }
+            _analyzing.value = false
+        }
     }
 
     private fun validate() {

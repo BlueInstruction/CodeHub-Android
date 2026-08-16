@@ -113,6 +113,15 @@ class AndroidProjectBuildPipeline @Inject constructor(
         val syncResult = awaitResult(syncId)
         if (syncResult == null || syncResult.status != BuildStatus.Succeeded) {
             emit(AndroidPipelineEvent.Synced(request.projectPath, false))
+            emitAiAnalysis(
+                request = request,
+                reason = "Gradle sync failed: ${syncResult?.stderr?.take(500) ?: "no result"}",
+                stage = "sync",
+                failureType = "Sync",
+                stdout = syncResult?.stdout ?: "",
+                stderr = syncResult?.stderr ?: "",
+                diagnostics = syncResult?.diagnostics ?: emptyList()
+            )
             return fail("Gradle sync failed: ${syncResult?.stderr?.take(300) ?: "no result"}", "sync")
         }
         emit(AndroidPipelineEvent.Synced(request.projectPath, true))
@@ -142,7 +151,15 @@ class AndroidProjectBuildPipeline @Inject constructor(
         }
         emit(AndroidPipelineEvent.BuildCompleted(buildTarget.id, buildResult.status.name, buildResult.durationMs))
         if (buildResult.status != BuildStatus.Succeeded) {
-            emit(AndroidPipelineEvent.AiAnalysisTriggered("Build failed: ${buildResult.stderr.take(500)}"))
+            emitAiAnalysis(
+                request = request,
+                reason = "Build failed: ${buildResult.stderr.take(500)}",
+                stage = "build",
+                failureType = "BuildCompile",
+                stdout = buildResult.stdout,
+                stderr = buildResult.stderr,
+                diagnostics = buildResult.diagnostics
+            )
             return fail("Build failed: ${buildResult.stderr.take(300)}", "build")
         }
 
@@ -160,7 +177,15 @@ class AndroidProjectBuildPipeline @Inject constructor(
             val installResult = apkInstaller.install(apk.path, reinstall = true)
             emit(AndroidPipelineEvent.ApkInstalled(installResult.packageName ?: request.packageName, installResult.success))
             if (!installResult.success) {
-                emit(AndroidPipelineEvent.AiAnalysisTriggered("Install failed: ${installResult.failureReason ?: installResult.output.take(300)}"))
+                emitAiAnalysis(
+                    request = request,
+                    reason = "Install failed: ${installResult.failureReason ?: installResult.output.take(300)}",
+                    stage = "install",
+                    failureType = "ApkInstall",
+                    stdout = installResult.output,
+                    stderr = installResult.failureReason ?: installResult.output,
+                    diagnostics = emptyList()
+                )
                 return fail("APK install failed: ${installResult.failureReason ?: installResult.output.take(300)}", "install")
             }
         }
@@ -214,6 +239,33 @@ class AndroidProjectBuildPipeline @Inject constructor(
 
     private fun emit(event: AndroidPipelineEvent) {
         eventFlow.tryEmit(event)
+    }
+
+    private fun emitAiAnalysis(
+        request: AndroidPipelineRequest,
+        reason: String,
+        stage: String,
+        failureType: String,
+        stdout: String,
+        stderr: String,
+        diagnostics: List<codehub.build.api.BuildDiagnostic>
+    ) {
+        val diagnosticsJson = kotlinx.serialization.json.Json.encodeToString(
+            kotlinx.serialization.builtins.ListSerializer(codehub.build.api.BuildDiagnostic.serializer()),
+            diagnostics
+        )
+        eventFlow.tryEmit(
+            AndroidPipelineEvent.AiAnalysisTriggered(
+                reason = reason,
+                stage = stage,
+                workspacePath = request.projectPath,
+                packageName = request.packageName,
+                failureType = failureType,
+                stdout = stdout.take(8000),
+                stderr = stderr.take(8000),
+                diagnosticsJson = diagnosticsJson.take(16000)
+            )
+        )
     }
 
     private suspend fun fail(reason: String, stage: String) {

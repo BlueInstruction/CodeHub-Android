@@ -27,6 +27,7 @@ dependencies {
     implementation(project(":ai:gateway"))
     implementation(project(":ai:tools"))
     implementation(project(":ai:context"))
+    implementation(project(":build:api"))
     implementation(project(":devtools:logcat"))
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)

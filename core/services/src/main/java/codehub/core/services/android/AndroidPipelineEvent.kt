@@ -32,7 +32,16 @@ sealed interface AndroidPipelineEvent {
     @Serializable data class ApkInstalled(val packageName: String, val ok: Boolean) : AndroidPipelineEvent
     @Serializable data class AppLaunched(val packageName: String, val ok: Boolean) : AndroidPipelineEvent
     @Serializable data class LogcatStreaming(val packageName: String, val pid: Int?) : AndroidPipelineEvent
-    @Serializable data class AiAnalysisTriggered(val reason: String) : AndroidPipelineEvent
+    @Serializable data class AiAnalysisTriggered(
+        val reason: String,
+        val stage: String,
+        val workspacePath: String,
+        val packageName: String,
+        val failureType: String,
+        val stdout: String,
+        val stderr: String,
+        val diagnosticsJson: String
+    ) : AndroidPipelineEvent
     @Serializable data class PipelineSucceeded(val packageName: String) : AndroidPipelineEvent
     @Serializable data class PipelineFailed(val reason: String, val stage: String) : AndroidPipelineEvent
     @Serializable data class LogEntry(val timestamp: String, val level: Char, val tag: String, val message: String) : AndroidPipelineEvent

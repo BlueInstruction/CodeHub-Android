@@ -212,6 +212,23 @@ class ToolchainInstaller @Inject constructor(
         return true
     }
 
+    /**
+     * Provisions missing toolchain components.
+     *
+     * Invariant: toolchain installation must NOT corrupt the Termux package
+     * database. Specifically:
+     *
+     * - JDK, CMake, Ninja, Clang, Git, Adb are installed via Termux `pkg install`
+     *   because they are generic Linux tools that Termux packages cleanly own.
+     * - Android SDK, Platform Tools, Build Tools, Platform SDK, and NDK are
+     *   installed via `sdkmanager` into CodeHub's own data dir
+     *   (`context.filesDir/android-sdk/`), NOT into the Termux prefix. This
+     *   isolates the SDK/NDK from Termux packages and prevents version
+     *   conflicts (e.g. ndk-sysroot overwriting openssl-owned files).
+     * - Gradle is NEVER installed globally. The per-project Gradle wrapper
+     *   (`gradlew` + `gradle-wrapper.jar` + `gradle-wrapper.properties`) is
+     *   the single source of truth for the project's Gradle version.
+     */
     suspend fun ensureReady(readiness: ToolchainReadiness): ToolchainReadiness {
         if (readiness.ready) return readiness
 

@@ -354,10 +354,10 @@ class ToolchainManager @Inject constructor(
         }
         return ToolchainDescriptor(
             component = ToolchainComponent.Gradle,
-            version = null,
+            version = "wrapper",
             path = null,
-            source = ToolchainSource.NotFound,
-            compatible = false
+            source = ToolchainSource.CodeHub,
+            compatible = true
         )
     }
 
@@ -434,7 +434,6 @@ class ToolchainManager @Inject constructor(
             ToolchainComponent.AndroidSdk,
             ToolchainComponent.BuildTools,
             ToolchainComponent.PlatformSdk,
-            ToolchainComponent.Gradle,
             ToolchainComponent.Git
         )
 

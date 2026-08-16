@@ -56,6 +56,8 @@ fun NewProjectScreen(
     val isRunning by viewModel.isRunning.collectAsState()
     val events by viewModel.events.collectAsState()
     val logs by viewModel.logEntries.collectAsState()
+    val analysis by viewModel.analysis.collectAsState()
+    val analyzing by viewModel.analyzing.collectAsState()
 
     Scaffold(
         topBar = {
@@ -74,6 +76,10 @@ fun NewProjectScreen(
             if (pipelineState != AndroidPipelineState.Idle) {
                 item { PipelineStateCard(pipelineState) }
             }
+            if (analyzing) {
+                item { AnalyzingCard() }
+            }
+            analysis?.let { item { AnalysisCard(it) } }
             if (events.isNotEmpty()) {
                 item {
                     Text("Pipeline events", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 8.dp))
@@ -337,4 +343,100 @@ private fun describeTemplate(kind: ProjectTemplateKind): String = when (kind) {
     ProjectTemplateKind.BasicViews -> "Single Activity with XML layout, TextView, Button. For classic Android View system."
     ProjectTemplateKind.NativeActivity -> "NativeActivity with C++ via JNI, CMake build. For NDK development."
     ProjectTemplateKind.AndroidLibrary -> "Android library module skeleton. Produces an AAR."
+}
+
+@Composable
+private fun AnalyzingCard() {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "AI Failure Analysis",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+            Text(
+                text = "Gathering project context and requesting diagnosis...",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth().height(4.dp))
+        }
+    }
+}
+
+@Composable
+private fun AnalysisCard(result: codehub.ai.agents.AnalysisResult) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "AI Failure Analysis",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+            Text(
+                text = "Type: ${result.failureType.name}  ·  Session: ${result.sessionId}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            result.rootCauseHypothesis?.let {
+                Text(
+                    text = "Root-cause hypothesis",
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Text(
+                    text = it.take(1000),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+            result.evidence?.let {
+                Text(
+                    text = "Evidence",
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Text(
+                    text = it.take(1500),
+                    style = MaterialTheme.typography.bodySmall,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+            result.suggestedPatch?.let { patch ->
+                Text(
+                    text = "Suggested patch",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(6.dp))
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = patch,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            if (result.suggestedPatch == null) {
+                Text(
+                    text = "No automated patch suggested — configuration change likely needed.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.outline
+                )
+            }
+            if (result.errors != null) {
+                Text(
+                    text = "Provider errors: ${result.errors}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            Text(
+                text = "Context gathered: ${result.buildDiagnostics.size} diagnostics, ${result.logcatEntries.size} logcat entries, ${result.projectContext.referencedSourceFiles.size} source files",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
 }
