@@ -51,7 +51,8 @@ class DefaultAgentRunner @Inject constructor(
                 defaultLevel = PermissionLevel.WORKSPACE_WRITE,
                 allowedTools = tools.keys,
                 deniedTools = emptySet(),
-                requireApprovalForDestructive = true
+                requireApprovalForDestructive = true,
+                workspaceScope = null
             )
         )
     }
