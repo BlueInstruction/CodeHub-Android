@@ -32,16 +32,13 @@ class DefaultServiceManager @Inject constructor(
     override fun services(): List<ManagedService> = registry.values.toList().sortedBy { it.name }
 
     override fun statuses(): Flow<List<ServiceStatus>> = flow {
-        val collected = mutableListOf<ServiceStatus>()
         val services = services()
         if (services.isEmpty()) {
             emit(emptyList())
             return@flow
         }
-        val perService = services.map { svc ->
-            svc.status()
-        }
-        combine(perService) { array ->
+        val perService = services.map { svc -> svc.status() }
+        kotlinx.coroutines.flow.combine(perService) { array ->
             array.toList()
         }.collect { emit(it) }
     }

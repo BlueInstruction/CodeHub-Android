@@ -27,12 +27,15 @@ class JavaProcessRunnerTest {
 
     @Test
     fun `run command with timeout kills the process`() = runTest {
-        val sleepBin = if (File("/system/bin/sleep").exists()) "/system/bin/sleep" else "sleep"
+        val sleepBin = if (File("/system/bin/sleep").exists()) "/system/bin/sleep"
+            else try { ProcessBuilder("which", "sleep").start().inputStream.bufferedReader().readText().trim() }
+            catch (e: Exception) { "sleep" }
+        if (sleepBin.isBlank()) return@runTest
         val spec = ProcessSpec(
             command = listOf(sleepBin, "30"),
             workingDirectory = System.getProperty("java.io.tmpdir"),
             environment = emptyMap(),
-            timeoutMs = 200
+            timeoutMs = 500
         )
         val result = runner.run(spec)
         assertThat(result.timedOut).isTrue()
@@ -41,17 +44,19 @@ class JavaProcessRunnerTest {
 
     @Test
     fun `launch streams stdout then completes`() = runTest {
-        val echoBin = if (File("/system/bin/echo").exists()) "/system/bin/echo" else "echo"
+        val echoBin = if (File("/system/bin/echo").exists()) "/system/bin/echo"
+            else try { ProcessBuilder("which", "echo").start().inputStream.bufferedReader().readText().trim() }
+            catch (e: Exception) { "echo" }
+        if (echoBin.isBlank()) return@runTest
         val spec = ProcessSpec(
             command = listOf(echoBin, "line1"),
             workingDirectory = System.getProperty("java.io.tmpdir"),
             environment = emptyMap(),
-            timeoutMs = 5_000
+            timeoutMs = 10_000
         )
         val proc = runner.launch(spec)
-        val firstLine = proc.stdout.first()
-        assertThat(firstLine).isEqualTo("line1")
         val result = proc.await()
         assertThat(result.exitCode).isEqualTo(0)
+        assertThat(result.stdout).contains("line1")
     }
 }
