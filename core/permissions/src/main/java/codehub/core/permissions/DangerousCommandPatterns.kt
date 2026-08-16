@@ -19,7 +19,7 @@ object DangerousCommandPatterns {
 
     val patterns: List<Pattern> = listOf(
         Pattern("rm_rf_root", Regex("""\brm\s+(?:-[a-zA-Z]*r[a-zA-Z]*f?|-[a-zA-Z]*f[a-zA-Z]*r)\s+(?:--no-preserve-root\s+)?/(?:\s|$|\*)"""), "Recursive delete targeting filesystem root", Severity.Catastrophic),
-        Pattern("rm_rf_home", Regex("""\brm\s+(?:-[a-zA-Z]*r[a-zA-Z]*f?|-[a-zA-Z]*f[a-zA-Z]*r)\s+(?:~|\$HOME)(?:\s|$)"""), "Recursive delete of home directory", Severity.Catastrophic),
+        Pattern("rm_rf_home", Regex("""\brm\s+(?:-[a-zA-Z]*r[a-zA-Z]*f?|-[a-zA-Z]*f[a-zA-Z]*r)\s+(?:~|${'$'}HOME)(?:\s|$)"""), "Recursive delete of home directory", Severity.Catastrophic),
         Pattern("rm_rf_wildcard", Regex("""\brm\s+(?:-[a-zA-Z]*r[a-zA-Z]*f?|-[a-zA-Z]*f[a-zA-Z]*r)\s+\*\.(?:so|apk|dex|jar|class|o|a|exe)"""), "Recursive delete of build artifacts", Severity.Dangerous),
         Pattern("rm_force_no_prompt", Regex("""\brm\s+.*-f.*\s"""), "Forced file deletion without prompt", Severity.Warn),
         Pattern("mkfs_any", Regex("""\bmkfs(?:\.\w+)?\s+/dev/(?:sd|nvme|vd|hd|mmcblk)"""), "Filesystem format on block device", Severity.Catastrophic),

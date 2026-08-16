@@ -48,7 +48,9 @@ class DefaultProjectIndexer @Inject constructor(
         snapshot
     }
 
-    override fun observe(rootPath: String): Flow<IndexSnapshot> = snapshots.asSharedFlow()
+    override fun observe(rootPath: String): Flow<IndexSnapshot> = kotlinx.coroutines.flow.flow {
+        snapshots.asSharedFlow().collect { (_, snapshot) -> emit(snapshot) }
+    }
 
     override suspend fun lookupSymbol(rootPath: String, symbol: String): List<String> {
         val snapshot = cache[rootPath] ?: index(rootPath)
