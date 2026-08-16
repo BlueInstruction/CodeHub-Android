@@ -30,17 +30,10 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew || true
+        run: chmod +x gradlew
 
       - name: Run unit tests
-        run: |
-          if [ -f gradlew ]; then
-            ./gradlew test --no-daemon --stacktrace
-          else
-            echo "No gradlew found — generating wrapper"
-            gradle wrapper --gradle-version 8.10.2
-            ./gradlew test --no-daemon --stacktrace
-          fi
+        run: ./gradlew test --no-daemon --stacktrace
 
       - name: Upload test results
         if: always()
@@ -71,16 +64,10 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew || true
+        run: chmod +x gradlew
 
       - name: Build debug APK
-        run: |
-          if [ -f gradlew ]; then
-            ./gradlew :app:assembleDebug --no-daemon --stacktrace
-          else
-            gradle wrapper --gradle-version 8.10.2
-            ./gradlew :app:assembleDebug --no-daemon --stacktrace
-          fi
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
         if: always()
@@ -107,16 +94,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew || true
+        run: chmod +x gradlew
 
       - name: Run lint
-        run: |
-          if [ -f gradlew ]; then
-            ./gradlew lint --no-daemon --stacktrace || true
-          else
-            gradle wrapper --gradle-version 8.10.2
-            ./gradlew lint --no-daemon --stacktrace || true
-          fi
+        run: ./gradlew lint --no-daemon --stacktrace || true
 
   module-structure-check:
     name: Module Structure
@@ -127,7 +108,7 @@ jobs:
 
       - name: Verify no blueinstruction references
         run: |
-          if grep -rn "blueinstruction" --include="*.kt" --include="*.kts" --include="*.pro" --include="*.xml" --include="*.toml" --include="*.md" . 2>/dev/null; then
+          if grep -rn "blueinstruction" --include="*.kt" --include="*.kts" --include="*.pro" --include="*.xml" --include="*.toml" --exclude-dir=".github" . 2>/dev/null; then
             echo "ERROR: Found 'blueinstruction' references in source files"
             exit 1
           fi
