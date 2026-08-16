@@ -9,7 +9,7 @@ data class CodeHubConfig(
     val cacheDirPath: String,
     val terminal: TerminalConfig = TerminalConfig(),
     val editor: EditorConfig = EditorConfig(),
-    val build: BuildConfig = BuildConfig(),
+    val build: CodeHubBuildConfig = CodeHubBuildConfig(),
     val ai: AiConfig = AiConfig(),
     val device: DeviceConfig = DeviceConfig()
 )
@@ -33,7 +33,7 @@ data class EditorConfig(
 )
 
 @Serializable
-data class BuildConfig(
+data class CodeHubBuildConfig(
     val parallelJobs: Int = Runtime.getRuntime().availableProcessors(),
     val warnAsError: Boolean = false,
     val ccacheEnabled: Boolean = false,
