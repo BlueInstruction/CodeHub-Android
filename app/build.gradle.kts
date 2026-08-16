@@ -77,6 +77,7 @@ dependencies {
     implementation(project(":build:cmake"))
     implementation(project(":build:ninja"))
     implementation(project(":build:nativetool"))
+    implementation(project(":build:native"))
     implementation(project(":ai:gateway"))
     implementation(project(":ai:agents"))
     implementation(project(":git:core"))
