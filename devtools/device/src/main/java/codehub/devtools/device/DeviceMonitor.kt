@@ -81,8 +81,8 @@ class DeviceMonitor @Inject constructor(
             battery = BatterySnapshot(
                 level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY),
                 isCharging = bm.isCharging,
-                temperatureCelsius = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_TEMPERATURE),
-                voltageMv = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_VOLTAGE),
+                temperatureCelsius = 0,
+                voltageMv = 0,
                 technology = null
             ),
             thermalState = thermalStateName(pm.currentThermalStatus),
