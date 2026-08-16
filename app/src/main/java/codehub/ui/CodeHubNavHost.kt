@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.PlayArrow
@@ -33,7 +34,7 @@ import codehub.R
 import codehub.ui.screens.AiScreen
 import codehub.ui.screens.BuildScreen
 import codehub.ui.screens.DevicesScreen
-import codehub.ui.screens.VerticalSliceScreen
+import codehub.ui.screens.newproject.NewProjectScreen
 import codehub.ui.screens.EditorScreen
 import codehub.ui.screens.GitScreen
 import codehub.ui.screens.TerminalScreen
@@ -49,7 +50,7 @@ private sealed class Dest(
     data object Terminal : Dest("terminal", R.string.nav_terminal, Icons.Filled.Terminal)
     data object Git : Dest("git", R.string.nav_git, Icons.Filled.Code)
     data object Build : Dest("build", R.string.nav_run, Icons.Filled.PlayArrow)
-    data object Slice : Dest("slice", R.string.nav_run, Icons.Filled.Bolt)
+    data object NewProject : Dest("newproject", R.string.nav_run, Icons.Filled.AddCircle)
     data object Ai : Dest("ai", R.string.nav_ai, Icons.Filled.Psychology)
     data object Devices : Dest("devices", R.string.nav_devices, Icons.Filled.Devices)
 }
@@ -63,7 +64,7 @@ fun CodeHubNavHost() {
         Dest.Terminal,
         Dest.Git,
         Dest.Build,
-        Dest.Slice,
+        Dest.NewProject,
         Dest.Ai,
         Dest.Devices
     )
@@ -117,7 +118,7 @@ private fun NavHostContainer(
         composable(Dest.Terminal.route) { TerminalScreen() }
         composable(Dest.Git.route) { GitScreen() }
         composable(Dest.Build.route) { BuildScreen() }
-        composable(Dest.Slice.route) { VerticalSliceScreen() }
+        composable(Dest.NewProject.route) { NewProjectScreen() }
         composable(Dest.Ai.route) { AiScreen() }
         composable(Dest.Devices.route) { DevicesScreen() }
     }

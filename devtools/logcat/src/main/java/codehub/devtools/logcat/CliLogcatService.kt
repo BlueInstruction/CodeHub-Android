@@ -54,6 +54,39 @@ class CliLogcatService @Inject constructor(
         }
     }
 
+    override fun streamForPid(pid: Int, filter: String?): Flow<LogcatEntry> {
+        return kotlinx.coroutines.flow.flow {
+            val spec = ProcessSpec(
+                command = buildList {
+                    add("logcat")
+                    add("--pid=$pid")
+                    add("-v")
+                    add("threadtime")
+                    if (!filter.isNullOrBlank()) add(filter)
+                },
+                workingDirectory = "/",
+                environment = emptyMap(),
+                timeoutMs = null
+            )
+            val proc = runCatching { processRunner.launch(spec) }.getOrNull() ?: return@flow
+            proc.stdout.collect { line ->
+                val entry = parse(line)
+                if (entry != null && matchesFilter(entry, filter)) {
+                    emit(entry)
+                }
+            }
+        }
+    }
+
+    override fun streamForPackage(packageName: String, filter: String?): Flow<LogcatEntry> {
+        return kotlinx.coroutines.flow.flow {
+            val pid = resolvePid(packageName)
+            if (pid != null && pid > 0) {
+                streamForPid(pid, filter).collect { emit(it) }
+            }
+        }
+    }
+
     override suspend fun snapshot(filter: String?, limit: Int): List<LogcatEntry> {
         val spec = ProcessSpec(
             command = buildList {
@@ -71,12 +104,74 @@ class CliLogcatService @Inject constructor(
         return result.stdout.lines()
             .filter { it.isNotBlank() }
             .mapNotNull { parse(it) }
-            .filter {
-                filter.isNullOrBlank() ||
-                    it.tag.contains(filter, ignoreCase = true) ||
-                    it.message.contains(filter, ignoreCase = true)
-            }
+            .filter { matchesFilter(it, filter) }
             .takeLast(limit)
+    }
+
+    override suspend fun snapshotForPid(pid: Int, filter: String?, limit: Int): List<LogcatEntry> {
+        val spec = ProcessSpec(
+            command = buildList {
+                add("logcat")
+                add("-d")
+                add("--pid=$pid")
+                add("-v")
+                add("threadtime")
+                if (!filter.isNullOrBlank()) add(filter)
+            },
+            workingDirectory = "/",
+            environment = emptyMap(),
+            timeoutMs = 5_000
+        )
+        val result = processRunner.run(spec)
+        return result.stdout.lines()
+            .filter { it.isNotBlank() }
+            .mapNotNull { parse(it) }
+            .filter { matchesFilter(it, filter) }
+            .takeLast(limit)
+    }
+
+    override suspend fun snapshotForPackage(packageName: String, filter: String?, limit: Int): List<LogcatEntry> {
+        val pid = resolvePid(packageName) ?: return emptyList()
+        return snapshotForPid(pid, filter, limit)
+    }
+
+    override suspend fun resolvePid(packageName: String): Int? {
+        val spec = ProcessSpec(
+            command = listOf("pidof", packageName),
+            workingDirectory = "/",
+            environment = emptyMap(),
+            timeoutMs = 2_000
+        )
+        val result = processRunner.run(spec)
+        if (result.exitCode == 0) {
+            val pid = result.stdout.trim().split(Regex("\\s+")).firstOrNull()?.toIntOrNull()
+            if (pid != null && pid > 0) return pid
+        }
+        val pgrepSpec = ProcessSpec(
+            command = listOf("pgrep", "-f", packageName),
+            workingDirectory = "/",
+            environment = emptyMap(),
+            timeoutMs = 2_000
+        )
+        val pgrepResult = processRunner.run(pgrepSpec)
+        if (pgrepResult.exitCode == 0) {
+            val pid = pgrepResult.stdout.trim().split(Regex("\\s+")).firstOrNull()?.toIntOrNull()
+            if (pid != null && pid > 0) return pid
+        }
+        val psSpec = ProcessSpec(
+            command = listOf("ps", "-A", "-o", "PID,NAME"),
+            workingDirectory = "/",
+            environment = emptyMap(),
+            timeoutMs = 2_000
+        )
+        val psResult = processRunner.run(psSpec)
+        for (line in psResult.stdout.lines()) {
+            val parts = line.trim().split(Regex("\\s+"))
+            if (parts.size >= 2 && parts[1] == packageName) {
+                return parts[0].toIntOrNull()
+            }
+        }
+        return null
     }
 
     override suspend fun clear() {
@@ -88,6 +183,12 @@ class CliLogcatService @Inject constructor(
                 timeoutMs = 1_500
             )
         )
+    }
+
+    private fun matchesFilter(entry: LogcatEntry, filter: String?): Boolean {
+        if (filter.isNullOrBlank()) return true
+        return entry.tag.contains(filter, ignoreCase = true) ||
+            entry.message.contains(filter, ignoreCase = true)
     }
 
     private fun parse(line: String): LogcatEntry? {

@@ -16,6 +16,11 @@ data class LogcatEntry(
 
 interface LogcatService {
     fun stream(filter: String?): Flow<LogcatEntry>
+    fun streamForPid(pid: Int, filter: String? = null): Flow<LogcatEntry>
+    fun streamForPackage(packageName: String, filter: String? = null): Flow<LogcatEntry>
     suspend fun snapshot(filter: String?, limit: Int): List<LogcatEntry>
+    suspend fun snapshotForPid(pid: Int, filter: String?, limit: Int): List<LogcatEntry>
+    suspend fun snapshotForPackage(packageName: String, filter: String?, limit: Int): List<LogcatEntry>
+    suspend fun resolvePid(packageName: String): Int?
     suspend fun clear()
 }

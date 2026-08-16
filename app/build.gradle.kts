@@ -73,6 +73,7 @@ dependencies {
     implementation(project(":terminal:api"))
     implementation(project(":terminal:termux"))
     implementation(project(":build:api"))
+    implementation(project(":build:gradle"))
     implementation(project(":ai:gateway"))
     implementation(project(":ai:agents"))
     implementation(project(":git:core"))
